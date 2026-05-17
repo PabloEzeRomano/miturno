@@ -35,18 +35,18 @@ export default function SignupPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--c-bg)' }}>
-      <div style={{ width: '100%', maxWidth: 440 }}>
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
+    <div className="auth-page">
+      <div className="auth-box--wide">
+        <Link href="/" className="auth-logo">
           <BrandMark size={28} />
           <Wordmark size={20} />
         </Link>
 
         <div className="panel">
-          <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 28, fontWeight: 500, margin: '0 0 6px', letterSpacing: '-0.01em' }}>Creá tu cuenta</h1>
-          <p style={{ color: 'var(--c-muted)', fontSize: 14, margin: '0 0 28px' }}>14 días gratis. Sin tarjeta de crédito.</p>
+          <h1 className="auth-title">Creá tu cuenta</h1>
+          <p className="auth-sub">14 días gratis. Sin tarjeta de crédito.</p>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <form onSubmit={handleSubmit} className="form-col">
             <div>
               <label className="label">Nombre</label>
               <input className="input" type="text" value={form.name} onChange={set('name')} required placeholder="Tu nombre completo" autoFocus />
@@ -64,22 +64,20 @@ export default function SignupPage() {
               <input className="input" type="text" value={form.shopName} onChange={set('shopName')} required placeholder="Barbería Ruiz" />
             </div>
             <div>
-              <label className="label">Teléfono <span style={{ color: 'var(--c-muted-30)' }}>(opcional)</span></label>
+              <label className="label">Teléfono <span className="label-optional">(opcional)</span></label>
               <input className="input" type="tel" value={form.phone} onChange={set('phone')} placeholder="+54 9 11 1234-5678" />
             </div>
 
-            {error && (
-              <div style={{ background: 'var(--c-danger-bg)', color: 'var(--c-danger)', padding: '10px 14px', borderRadius: 'var(--r-2)', fontSize: 13.5 }}>{error}</div>
-            )}
+            {error && <div className="error-msg">{error}</div>}
 
-            <button type="submit" className="btn btn-gold" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
+            <button type="submit" className="btn btn-gold btn-full" disabled={loading}>
               {loading ? 'Creando cuenta…' : 'Crear mi cuenta gratis →'}
             </button>
           </form>
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'var(--c-muted)' }}>
-          ¿Ya tenés cuenta?{' '}<Link href="/login" style={{ color: 'var(--c-ink)', fontWeight: 500, textDecoration: 'underline' }}>Iniciá sesión</Link>
+        <p className="auth-footer">
+          ¿Ya tenés cuenta?{' '}<Link href="/login">Iniciá sesión</Link>
         </p>
       </div>
     </div>

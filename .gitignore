@@ -3,6 +3,8 @@
 .env*.local
 .next/
 node_modules/
+generated/
 .DS_Store
 *.pem
 .next
+.claude

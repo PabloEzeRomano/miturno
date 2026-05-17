@@ -11,37 +11,29 @@ export function FAQ() {
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hola@corturno.com'
 
   return (
-    <section id="faq" style={{ padding: '120px 0', background: 'var(--c-surface)', borderTop: '1px solid var(--c-line)' }}>
+    <section id="faq" className="section section--surface section--bordered">
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'end', marginBottom: 64 }}>
+        <div className="sec-intro">
           <div>
-            <span className="eyebrow" style={{ display: 'inline-block', marginBottom: 16 }}>PREGUNTAS FRECUENTES</span>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 56, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.05, margin: 0 }}>
-              Lo que <em style={{ fontStyle: 'italic', color: 'var(--c-gold-deep)', fontWeight: 400 }}>siempre nos preguntan.</em>
+            <span className="eyebrow eyebrow-gap">PREGUNTAS FRECUENTES</span>
+            <h2 className="sec-heading">
+              Lo que <em>siempre nos preguntan.</em>
             </h2>
           </div>
-          <p style={{ color: 'var(--c-muted)', fontSize: 17, lineHeight: 1.55, maxWidth: '42ch', margin: 0 }}>
-            Si no encontrás lo que buscás, escribinos a <a href={`mailto:${contactEmail}`} style={{ color: 'var(--c-ink)', textDecoration: 'underline' }}>{contactEmail}</a> y te contestamos el mismo día.
+          <p className="sec-lead">
+            Si no encontrás lo que buscás, escribinos a <a href={`mailto:${contactEmail}`} className="faq-link">{contactEmail}</a> y te contestamos el mismo día.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 64, rowGap: 0, borderTop: '1px solid var(--c-line)' }}>
+        <div className="faq-grid">
           {faqs.map(({ q, a }) => (
-            <div key={q} style={{ padding: '28px 0', borderBottom: '1px solid var(--c-line)' }}>
-              <h4 style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 500, margin: '0 0 8px', letterSpacing: '-0.01em' }}>{q}</h4>
-              <p style={{ color: 'var(--c-muted)', fontSize: 14.5, lineHeight: 1.55, margin: 0, maxWidth: '48ch' }}>{a}</p>
+            <div key={q} className="faq-item">
+              <h4 className="faq-q">{q}</h4>
+              <p className="faq-a">{a}</p>
             </div>
           ))}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 1024px) {
-          #faq .faq-inner { grid-template-columns: 1fr !important; }
-          #faq .faq-grid { grid-template-columns: 1fr !important; }
-          #faq h2 { font-size: 44px !important; }
-        }
-      `}</style>
     </section>
   )
 }

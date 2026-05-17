@@ -34,12 +34,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div style={{ padding: 32, maxWidth: 560 }}>
-      <span className="eyebrow" style={{ display: 'block', marginBottom: 6 }}>ADMINISTRACIÓN</span>
-      <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 32, fontWeight: 500, letterSpacing: '-0.01em', margin: '0 0 32px' }}>Mi perfil</h1>
+    <div className="page-wrap--narrow">
+      <span className="eyebrow eyebrow-block">ADMINISTRACIÓN</span>
+      <h1 className="page-title page-title--mb">Mi perfil</h1>
 
-      <div className="panel" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div className="panel panel--mb">
+        <div className="form-col">
           <div>
             <label className="label">Nombre</label>
             <input className="input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
@@ -55,17 +55,15 @@ export default function ProfilePage() {
 
           <div>
             <label className="label">Tu link público</label>
-            <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-line)', borderRadius: 'var(--r-2)', padding: '12px 14px', fontFamily: 'var(--f-mono)', fontSize: 13.5, color: 'var(--c-ink)' }}>
-              turnos.gemm-apps.com/<em style={{ color: 'var(--c-gold-deep)', fontStyle: 'normal', fontWeight: 500 }}>{slug}</em>
+            <div className="field-mono">
+              turnos.gemm-apps.com/<em className="field-gold">{slug}</em>
             </div>
-            <p style={{ fontSize: 12.5, color: 'var(--c-muted)', marginTop: 8 }}>El link público no se puede cambiar para no romper reservas existentes.</p>
+            <p className="field-hint">El link público no se puede cambiar para no romper reservas existentes.</p>
           </div>
 
-          {error && (
-            <div style={{ background: 'var(--c-danger-bg)', color: 'var(--c-danger)', padding: '10px 14px', borderRadius: 'var(--r-2)', fontSize: 13.5 }}>{error}</div>
-          )}
+          {error && <div className="error-msg">{error}</div>}
 
-          <button className="btn btn-primary" onClick={save} disabled={saving} style={{ alignSelf: 'flex-start' }}>
+          <button className="btn btn-primary btn-start" onClick={save} disabled={saving}>
             {saved ? '¡Guardado!' : saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
         </div>

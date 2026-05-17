@@ -23,22 +23,19 @@ export function Sidebar({ barberName }: { barberName: string }) {
   const pathname = usePathname()
 
   return (
-    <aside style={{ width: 240, background: 'var(--c-surface)', borderRight: '1px solid var(--c-line)', display: 'flex', flexDirection: 'column', flexShrink: 0, minHeight: '100vh', position: 'sticky', top: 0, height: '100vh' }}>
-      <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--c-line)' }}>
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <Link href="/" className="sidebar-logo">
           <BrandMark size={28} />
           <Wordmark size={18} />
         </Link>
       </div>
 
-      <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <nav className="sidebar-nav">
         {navItems.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--r-2)', fontSize: 14, fontWeight: active ? 500 : 400, color: active ? 'var(--c-ink)' : 'var(--c-muted)', background: active ? 'var(--c-bg-2)' : 'transparent', transition: 'all .15s', textDecoration: 'none' }}
-              onMouseOver={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--c-bg)' }}
-              onMouseOut={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-            >
+            <Link key={href} href={href} className={`sidebar-link${active ? ' sidebar-link--active' : ''}`}>
               {icon}
               {label}
             </Link>
@@ -46,12 +43,9 @@ export function Sidebar({ barberName }: { barberName: string }) {
         })}
       </nav>
 
-      <div style={{ padding: '16px 20px', borderTop: '1px solid var(--c-line)' }}>
-        <div style={{ fontSize: 13, color: 'var(--c-ink)', fontWeight: 500, marginBottom: 2 }}>{barberName}</div>
-        <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
-          style={{ fontSize: 12.5, color: 'var(--c-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'var(--f-body)' }}
-        >
+      <div className="sidebar-footer">
+        <div className="sidebar-name">{barberName}</div>
+        <button className="sidebar-logout" onClick={() => signOut({ callbackUrl: '/login' })}>
           Cerrar sesión
         </button>
       </div>

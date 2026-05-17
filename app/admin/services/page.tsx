@@ -39,20 +39,20 @@ export default function ServicesPage() {
   }
 
   return (
-    <div style={{ padding: 32 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+    <div className="page-wrap">
+      <div className="page-header">
         <div>
-          <span className="eyebrow" style={{ display: 'block', marginBottom: 6 }}>ADMINISTRACIÓN</span>
-          <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 32, fontWeight: 500, letterSpacing: '-0.01em', margin: 0 }}>Servicios</h1>
+          <span className="eyebrow eyebrow-block">ADMINISTRACIÓN</span>
+          <h1 className="page-title">Servicios</h1>
         </div>
         <button className="btn btn-primary" onClick={() => setShowAdd(!showAdd)}>+ Agregar servicio</button>
       </div>
 
       {/* Add form */}
       {showAdd && (
-        <div className="panel" style={{ marginBottom: 24 }}>
-          <h3 style={{ fontFamily: 'var(--f-display)', fontSize: 20, fontWeight: 500, margin: '0 0 20px' }}>Nuevo servicio</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 140px', gap: 16, marginBottom: 16 }}>
+        <div className="panel panel--mb">
+          <h3 className="svc-add-h3">Nuevo servicio</h3>
+          <div className="svc-grid">
             <div>
               <label className="label">Nombre</label>
               <input className="input" value={newSvc.name} onChange={e => setNewSvc(s => ({ ...s, name: e.target.value }))} placeholder="Corte" />
@@ -66,7 +66,7 @@ export default function ServicesPage() {
               <input className="input" type="number" value={newSvc.price} onChange={e => setNewSvc(s => ({ ...s, price: Number(e.target.value) }))} min={0} step={100} />
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex-sm">
             <button className="btn btn-gold" onClick={addService} disabled={loading}>Guardar</button>
             <button className="btn btn-ghost" onClick={() => setShowAdd(false)}>Cancelar</button>
           </div>
@@ -74,32 +74,26 @@ export default function ServicesPage() {
       )}
 
       {/* Table */}
-      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="panel panel--flush">
+        <table className="data-table">
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--c-line)' }}>
+            <tr>
               {['Nombre', 'Duración', 'Precio', 'Estado', ''].map(h => (
-                <th key={h} style={{ padding: '12px 20px', textAlign: 'left', fontFamily: 'var(--f-mono)', fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--c-muted)', fontWeight: 500 }}>{h}</th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {services.map(svc => (
-              <tr key={svc.id} style={{ borderBottom: '1px solid var(--c-line)' }}>
+              <tr key={svc.id}>
                 {editId === svc.id ? (
                   <>
-                    <td style={{ padding: '10px 20px' }}>
-                      <input className="input" value={editData.name} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} style={{ width: '100%' }} />
-                    </td>
-                    <td style={{ padding: '10px 20px' }}>
-                      <input className="input" type="number" value={editData.durationMins} onChange={e => setEditData(d => ({ ...d, durationMins: Number(e.target.value) }))} style={{ width: 80 }} />
-                    </td>
-                    <td style={{ padding: '10px 20px' }}>
-                      <input className="input" type="number" value={editData.price} onChange={e => setEditData(d => ({ ...d, price: Number(e.target.value) }))} style={{ width: 100 }} />
-                    </td>
-                    <td style={{ padding: '10px 20px' }} />
-                    <td style={{ padding: '10px 20px' }}>
-                      <div style={{ display: 'flex', gap: 8 }}>
+                    <td className="td-edit"><input className="input" value={editData.name} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} /></td>
+                    <td className="td-edit"><input className="input" type="number" value={editData.durationMins} onChange={e => setEditData(d => ({ ...d, durationMins: Number(e.target.value) }))} style={{ width: 80 }} /></td>
+                    <td className="td-edit"><input className="input" type="number" value={editData.price} onChange={e => setEditData(d => ({ ...d, price: Number(e.target.value) }))} style={{ width: 100 }} /></td>
+                    <td className="td-edit" />
+                    <td className="td-edit">
+                      <div className="flex-sm">
                         <button className="btn btn-gold btn-sm" onClick={() => saveEdit(svc.id)}>Guardar</button>
                         <button className="btn btn-ghost btn-sm" onClick={() => setEditId(null)}>Cancelar</button>
                       </div>
@@ -107,16 +101,16 @@ export default function ServicesPage() {
                   </>
                 ) : (
                   <>
-                    <td style={{ padding: '14px 20px', fontWeight: 500, opacity: svc.isActive ? 1 : 0.45 }}>{svc.name}</td>
-                    <td style={{ padding: '14px 20px', fontFamily: 'var(--f-mono)', fontSize: 13, color: 'var(--c-muted)' }}>{svc.durationMins} min</td>
-                    <td style={{ padding: '14px 20px', fontFamily: 'var(--f-mono)', fontSize: 13 }}>${svc.price.toLocaleString('es-AR')}</td>
-                    <td style={{ padding: '14px 20px' }}>
+                    <td style={{ fontWeight: 500, opacity: svc.isActive ? 1 : 0.45 }}>{svc.name}</td>
+                    <td className="td-mono">{svc.durationMins} min</td>
+                    <td className="td-price">${svc.price.toLocaleString('es-AR')}</td>
+                    <td>
                       <label className="toggle">
                         <input type="checkbox" checked={svc.isActive} onChange={() => toggleActive(svc)} />
                         <span className="toggle-track" />
                       </label>
                     </td>
-                    <td style={{ padding: '14px 20px' }}>
+                    <td>
                       <button className="btn btn-ghost btn-sm" onClick={() => { setEditId(svc.id); setEditData({ name: svc.name, durationMins: svc.durationMins, price: svc.price }) }}>Editar</button>
                     </td>
                   </>

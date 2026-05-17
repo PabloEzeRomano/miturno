@@ -91,18 +91,18 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
   const displayDates = view === 'week' ? weekDates : [base]
 
   return (
-    <div style={{ padding: 32 }}>
+    <div className="page-wrap">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+      <div className="page-header">
         <div>
-          <span className="eyebrow" style={{ display: 'block', marginBottom: 6 }}>AGENDA</span>
-          <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 32, fontWeight: 500, letterSpacing: '-0.01em', margin: 0 }}>{shopName}</h1>
+          <span className="eyebrow eyebrow-block">AGENDA</span>
+          <h1 className="page-title">{shopName}</h1>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="flex-wrap-sm">
           <button className="btn btn-outline btn-sm" onClick={copyLink}>{copied ? '¡Copiado!' : 'Copiar link'}</button>
-          <div style={{ display: 'flex', border: '1px solid var(--c-line)', borderRadius: 'var(--r-2)', overflow: 'hidden' }}>
+          <div className="view-toggle">
             {(['week', 'day'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)} style={{ padding: '8px 14px', fontSize: 13, fontWeight: v === view ? 500 : 400, background: v === view ? 'var(--c-ink)' : '#fff', color: v === view ? '#fff' : 'var(--c-muted)', border: 'none', cursor: 'pointer', fontFamily: 'var(--f-body)' }}>
+              <button key={v} onClick={() => setView(v)} className={`view-btn${v === view ? ' view-btn--active' : ''}`}>
                 {v === 'week' ? 'Semana' : 'Día'}
               </button>
             ))}
@@ -111,20 +111,20 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
       </div>
 
       {/* Status filter */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div className="filter-bar">
         {[['all', 'Todos'], ['confirmed', 'Confirmados'], ['completed', 'Completados'], ['cancelled', 'Cancelados']].map(([val, label]) => (
-          <button key={val} onClick={() => setStatusFilter(val)} style={{ padding: '6px 14px', fontSize: 13, fontWeight: statusFilter === val ? 500 : 400, background: statusFilter === val ? 'var(--c-ink)' : 'var(--c-surface)', color: statusFilter === val ? '#fff' : 'var(--c-muted)', border: '1px solid var(--c-line)', borderRadius: 'var(--r-2)', cursor: 'pointer', fontFamily: 'var(--f-body)', transition: 'all .15s' }}>
+          <button key={val} onClick={() => setStatusFilter(val)} className={`filter-btn${statusFilter === val ? ' filter-btn--active' : ''}`}>
             {label}
           </button>
         ))}
       </div>
 
       {/* Date nav */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+      <div className="date-nav">
         <button className="btn btn-ghost btn-sm" onClick={() => { const d = new Date(base); d.setDate(d.getDate() - (view === 'week' ? 7 : 1)); setBase(d) }}>
           ← {view === 'week' ? 'Semana anterior' : 'Día anterior'}
         </button>
-        <span style={{ fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--c-muted)' }}>
+        <span className="date-nav-label">
           {view === 'week' ? `${fmt(weekDates[0])} — ${fmt(weekDates[6])}` : base.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </span>
         <button className="btn btn-ghost btn-sm" onClick={() => { const d = new Date(base); d.setDate(d.getDate() + (view === 'week' ? 7 : 1)); setBase(d) }}>
@@ -135,32 +135,33 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
 
       {/* Calendar grid */}
       {appointments.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--c-muted)' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--c-muted-30)', marginBottom: 20 }}><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 9h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
-          <p style={{ fontFamily: 'var(--f-display)', fontSize: 22, color: 'var(--c-ink)', marginBottom: 8 }}>Sin turnos en este período</p>
-          <p style={{ fontSize: 14, marginBottom: 20 }}>Compartí tu link para que los clientes reserven.</p>
+        <div className="agenda-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="agenda-empty-icon"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 9h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+          <p className="agenda-empty-title">Sin turnos en este período</p>
+          <p className="agenda-empty-sub">Compartí tu link para que los clientes reserven.</p>
           <button className="btn btn-outline btn-sm" onClick={copyLink}>{copied ? '¡Copiado!' : 'Copiar link público'}</button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: view === 'week' ? 'repeat(7, 1fr)' : '1fr', gap: 1, background: 'var(--c-line)', border: '1px solid var(--c-line)', borderRadius: 'var(--r-2)', overflow: 'hidden' }}>
+        <div className={`cal-grid ${view === 'week' ? 'cal-grid--week' : 'cal-grid--day'}`}>
           {displayDates.map(date => {
             const dayAppts = appointments.filter(a => isSameDay(new Date(a.startsAt), date))
             const isToday = isSameDay(date, new Date())
             return (
-              <div key={date.toISOString()} style={{ background: 'var(--c-surface)', minHeight: 120 }}>
-                <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--c-line)', background: isToday ? 'var(--c-gold-soft)' : 'var(--c-bg)', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontFamily: 'var(--f-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: isToday ? 'var(--c-gold-deep)' : 'var(--c-muted)' }}>
+              <div key={date.toISOString()} className="cal-col">
+                <div className={`cal-col-hdr ${isToday ? 'cal-col-hdr--today' : 'cal-col-hdr--normal'}`}>
+                  <span className={`cal-weekday${isToday ? ' cal-weekday--today' : ''}`}>
                     {date.toLocaleDateString('es-AR', { weekday: 'short' }).toUpperCase()}
                   </span>
-                  <span style={{ fontFamily: 'var(--f-display)', fontSize: 20, fontWeight: 500, color: isToday ? 'var(--c-gold-deep)' : 'var(--c-ink)' }}>{date.getDate()}</span>
+                  <span className={`cal-date-num${isToday ? ' cal-date-num--today' : ''}`}>{date.getDate()}</span>
                 </div>
-                <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div className="cal-appts">
                   {dayAppts.map(appt => (
                     <button key={appt.id} onClick={() => { setSelected(appt); setDrawerOpen(true) }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', background: STATUS_BG[appt.status] || 'var(--c-bg-2)', borderLeft: `3px solid ${STATUS_COLORS[appt.status] || 'var(--c-muted)'}`, borderRadius: 'var(--r-1)', padding: '6px 8px', fontSize: 11, cursor: 'pointer', border: `1px solid transparent`, borderLeftWidth: 3, borderLeftColor: STATUS_COLORS[appt.status] || 'var(--c-muted)', fontFamily: 'var(--f-body)', lineHeight: 1.4 }}>
-                      <div style={{ fontWeight: 500, color: 'var(--c-ink)' }}>{appt.clientName}</div>
-                      <div style={{ color: 'var(--c-muted)', fontFamily: 'var(--f-mono)', fontSize: 10 }}>{fmtTime(appt.startsAt)} · {appt.service.name}</div>
-                      <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: STATUS_COLORS[appt.status], marginTop: 2 }} />
+                      className="appt-btn"
+                      style={{ background: STATUS_BG[appt.status] || 'var(--c-bg-2)', borderLeftWidth: 3, borderLeftColor: STATUS_COLORS[appt.status] || 'var(--c-muted)', borderLeftStyle: 'solid' }}>
+                      <div className="appt-name">{appt.clientName}</div>
+                      <div className="appt-meta">{fmtTime(appt.startsAt)} · {appt.service.name}</div>
+                      <span className="appt-dot" style={{ background: STATUS_COLORS[appt.status] }} />
                     </button>
                   ))}
                 </div>
@@ -173,17 +174,17 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
       {/* Drawer */}
       {drawerOpen && selected && (
         <>
-          <div onClick={() => { setDrawerOpen(false); setSelected(null) }} style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.4)', zIndex: 40 }} />
-          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 380, background: 'var(--c-surface)', boxShadow: 'var(--sh-2)', zIndex: 50, padding: 28, display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div onClick={() => { setDrawerOpen(false); setSelected(null) }} className="drawer-overlay" />
+          <div className="drawer">
+            <div className="drawer-top">
               <div>
-                <span className="eyebrow" style={{ display: 'block', marginBottom: 8 }}>TURNO</span>
-                <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 500, margin: 0 }}>{selected.clientName}</h2>
+                <span className="eyebrow eyebrow-block">TURNO</span>
+                <h2 className="drawer-h2">{selected.clientName}</h2>
               </div>
               <button onClick={() => { setDrawerOpen(false); setSelected(null) }} className="btn btn-ghost btn-sm">✕</button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="drawer-rows">
               <Row label="Servicio" value={selected.service.name} />
               <Row label="Hora" value={`${fmtTime(selected.startsAt)} — ${fmtTime(selected.endsAt)}`} mono />
               <Row label="Precio" value={`$${selected.service.price.toLocaleString('es-AR')}`} mono />
@@ -195,12 +196,12 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 'auto' }}>
+            <div className="drawer-actions">
               {selected.status !== 'completed' && (
                 <button className="btn btn-primary" onClick={() => updateStatus(selected.id, 'completed')}>Marcar como completado</button>
               )}
               {selected.status !== 'cancelled' && (
-                <button className="btn btn-outline" style={{ borderColor: 'var(--c-danger)', color: 'var(--c-danger)' }} onClick={() => updateStatus(selected.id, 'cancelled')}>Cancelar turno</button>
+                <button className="btn btn-outline btn-cancel-appt" onClick={() => updateStatus(selected.id, 'cancelled')}>Cancelar turno</button>
               )}
               {selected.status !== 'confirmed' && (
                 <button className="btn btn-ghost" onClick={() => updateStatus(selected.id, 'confirmed')}>Reconfirmar</button>
@@ -217,7 +218,7 @@ function Row({ label, value, mono = false }: { label: string; value: string; mon
   return (
     <div>
       <span className="label">{label}</span>
-      <span style={{ fontSize: 14.5, fontFamily: mono ? 'var(--f-mono)' : 'var(--f-body)', color: 'var(--c-ink)' }}>{value}</span>
+      <span className={mono ? 'row-value row-value--mono' : 'row-value'}>{value}</span>
     </div>
   )
 }

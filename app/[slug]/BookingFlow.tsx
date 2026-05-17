@@ -78,34 +78,33 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
   const calDays = getCalendarDays(calYear, calMonth)
 
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 20px' }}>
+    <div className="booking-flow">
       {/* Step indicators */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
+      <div className="step-bar">
         {[1, 2, 3, 4].map(s => (
-          <div key={s} style={{ flex: 1, height: 3, borderRadius: 99, background: s <= step ? 'var(--c-gold)' : 'var(--c-line)', transition: 'background .2s' }} />
+          <div key={s} className={`step-pip${s <= step ? ' step-pip--active' : ''}`} />
         ))}
       </div>
 
       {/* Step 1 — Services */}
       {step === 1 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 500, margin: '0 0 20px', letterSpacing: '-0.01em' }}>Elegí tu servicio</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <h2 className="step-h2">Elegí tu servicio</h2>
+          <div className="svc-list">
             {services.map(svc => {
               const sel = selectedService?.id === svc.id
               return (
-                <button key={svc.id} onClick={() => setSelectedService(svc)}
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px', border: `1px solid ${sel ? 'var(--c-gold)' : 'var(--c-line)'}`, boxShadow: sel ? '0 0 0 1px var(--c-gold) inset' : 'none', borderRadius: 'var(--r-2)', background: sel ? '#FFFBF0' : 'var(--c-surface)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--f-body)', transition: 'all .15s' }}>
+                <button key={svc.id} onClick={() => setSelectedService(svc)} className={`svc-btn${sel ? ' svc-btn--sel' : ''}`}>
                   <div>
-                    <div style={{ fontFamily: 'var(--f-display)', fontSize: 18, fontWeight: 500 }}>{svc.name}</div>
-                    <div style={{ fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--c-muted)', marginTop: 3 }}>{svc.durationMins} min</div>
+                    <div className="svc-btn-name">{svc.name}</div>
+                    <div className="svc-btn-dur">{svc.durationMins} min</div>
                   </div>
-                  <div style={{ fontFamily: 'var(--f-display)', fontSize: 20, fontWeight: 500 }}>${svc.price.toLocaleString('es-AR')}</div>
+                  <div className="svc-btn-price">${svc.price.toLocaleString('es-AR')}</div>
                 </button>
               )
             })}
           </div>
-          <button className="btn btn-primary" style={{ marginTop: 24, width: '100%', justifyContent: 'center' }} disabled={!selectedService} onClick={() => setStep(2)}>
+          <button className="btn btn-primary btn-full mt-24" disabled={!selectedService} onClick={() => setStep(2)}>
             Siguiente →
           </button>
         </div>
@@ -114,17 +113,16 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
       {/* Step 2 — Date */}
       {step === 2 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 500, margin: '0 0 20px', letterSpacing: '-0.01em' }}>Elegí la fecha</h2>
-          {/* Calendar nav */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 className="step-h2">Elegí la fecha</h2>
+          <div className="cal-nav">
             <button className="btn btn-ghost btn-sm" onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1) } else setCalMonth(m => m - 1) }}>←</button>
-            <span style={{ fontFamily: 'var(--f-display)', fontSize: 18, fontWeight: 500 }}>{MONTHS_ES[calMonth]} {calYear}</span>
+            <span className="cal-month">{MONTHS_ES[calMonth]} {calYear}</span>
             <button className="btn btn-ghost btn-sm" onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1) } else setCalMonth(m => m + 1) }}>→</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 8 }}>
-            {DAYS_ES.map(d => <div key={d} style={{ textAlign: 'center', fontFamily: 'var(--f-mono)', fontSize: 10.5, color: 'var(--c-muted)', padding: '4px 0', letterSpacing: '0.06em' }}>{d}</div>)}
+          <div className="cal-dow-grid">
+            {DAYS_ES.map(d => <div key={d} className="cal-dow">{d}</div>)}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+          <div className="cal-days-grid">
             {calDays.map((date, i) => {
               if (!date) return <div key={i} />
               const isPast = date < today
@@ -132,15 +130,15 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
               const isSel = selectedDate?.toDateString() === date.toDateString()
               return (
                 <button key={i} disabled={isPast} onClick={() => setSelectedDate(date)}
-                  style={{ padding: '8px 0', borderRadius: 'var(--r-2)', border: '1px solid transparent', fontFamily: 'var(--f-mono)', fontSize: 13, cursor: isPast ? 'default' : 'pointer', background: isSel ? 'var(--c-gold)' : isToday ? 'var(--c-gold-soft)' : 'transparent', color: isPast ? 'var(--c-muted-30)' : isSel ? 'var(--c-ink)' : 'var(--c-ink)', fontWeight: isSel || isToday ? 600 : 400, transition: 'all .15s' }}>
+                  className={`cal-day${isPast ? ' cal-day--past' : isSel ? ' cal-day--sel' : isToday ? ' cal-day--today' : ''}`}>
                   {date.getDate()}
                 </button>
               )
             })}
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 24 }}>
+          <div className="step-actions">
             <button className="btn btn-ghost" onClick={() => setStep(1)}>← Atrás</button>
-            <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={!selectedDate} onClick={() => setStep(3)}>Siguiente →</button>
+            <button className="btn btn-primary step-next" disabled={!selectedDate} onClick={() => setStep(3)}>Siguiente →</button>
           </div>
         </div>
       )}
@@ -148,28 +146,24 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
       {/* Step 3 — Time */}
       {step === 3 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 500, margin: '0 0 6px', letterSpacing: '-0.01em' }}>Elegí el horario</h2>
-          {selectedDate && <p style={{ color: 'var(--c-muted)', fontSize: 14, margin: '0 0 20px' }}>{selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>}
+          <h2 className="step-h2 step-h2--sm">Elegí el horario</h2>
+          {selectedDate && <p className="step-sub">{selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>}
           {slotsLoading ? (
-            <p style={{ color: 'var(--c-muted)', fontSize: 14 }}>Cargando horarios…</p>
+            <p className="step-sub">Cargando horarios…</p>
           ) : slots.length === 0 ? (
-            <p style={{ color: 'var(--c-muted)', fontSize: 14 }}>No hay horarios disponibles para este día.</p>
+            <p className="step-sub">No hay horarios disponibles para este día.</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-              {slots.map(slot => {
-                const sel = selectedSlot === slot
-                return (
-                  <button key={slot} onClick={() => setSelectedSlot(slot)}
-                    style={{ padding: '10px 0', fontFamily: 'var(--f-mono)', fontSize: 13, border: `1px solid ${sel ? 'var(--c-ink)' : 'var(--c-line)'}`, borderRadius: 'var(--r-2)', background: sel ? 'var(--c-ink)' : 'var(--c-surface)', color: sel ? '#fff' : 'var(--c-ink)', cursor: 'pointer', transition: 'all .15s' }}>
-                    {slot}
-                  </button>
-                )
-              })}
+            <div className="slots-grid">
+              {slots.map(slot => (
+                <button key={slot} onClick={() => setSelectedSlot(slot)} className={`slot-btn${selectedSlot === slot ? ' slot-btn--sel' : ''}`}>
+                  {slot}
+                </button>
+              ))}
             </div>
           )}
-          <div style={{ display: 'flex', gap: 8, marginTop: 24 }}>
+          <div className="step-actions">
             <button className="btn btn-ghost" onClick={() => setStep(2)}>← Atrás</button>
-            <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={!selectedSlot} onClick={() => setStep(4)}>Siguiente →</button>
+            <button className="btn btn-primary step-next" disabled={!selectedSlot} onClick={() => setStep(4)}>Siguiente →</button>
           </div>
         </div>
       )}
@@ -177,11 +171,11 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
       {/* Step 4 — Client form */}
       {step === 4 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 26, fontWeight: 500, margin: '0 0 6px', letterSpacing: '-0.01em' }}>Tus datos</h2>
-          <p style={{ color: 'var(--c-muted)', fontSize: 14, margin: '0 0 24px' }}>
+          <h2 className="step-h2 step-h2--sm">Tus datos</h2>
+          <p className="step-sub">
             {selectedService?.name} · {selectedDate?.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })} a las {selectedSlot}
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div className="form-col">
             <div>
               <label className="label">Nombre *</label>
               <input className="input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="Tu nombre completo" />
@@ -191,13 +185,13 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
               <input className="input" type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} required placeholder="+54 9 11 1234-5678" />
             </div>
             <div>
-              <label className="label">Email <span style={{ color: 'var(--c-muted-30)' }}>(opcional)</span></label>
+              <label className="label">Email <span className="label-optional">(opcional)</span></label>
               <input className="input" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="tu@email.com" />
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 24 }}>
+          <div className="step-actions">
             <button className="btn btn-ghost" onClick={() => setStep(3)}>← Atrás</button>
-            <button className="btn btn-gold" style={{ flex: 1, justifyContent: 'center' }} disabled={!form.name || !form.phone || submitting} onClick={submitBooking}>
+            <button className="btn btn-gold step-next" disabled={!form.name || !form.phone || submitting} onClick={submitBooking}>
               {submitting ? 'Reservando…' : `Reservar ${selectedSlot}`}
             </button>
           </div>

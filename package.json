@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
@@ -14,19 +16,23 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
-    "@prisma/client": "^5.22.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "bcryptjs": "^2.4.3",
+    "dotenv": "^17.4.2",
     "next": "14.2.29",
     "next-auth": "^5.0.0-beta.25",
+    "pg": "^8.20.0",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.19.41",
+    "@types/pg": "^8.20.0",
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
-    "prisma": "^5.22.0",
+    "prisma": "^7.8.0",
     "tsx": "^4.22.0",
     "typescript": "^5.9.3"
   }

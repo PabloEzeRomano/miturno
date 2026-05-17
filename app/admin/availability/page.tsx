@@ -59,33 +59,33 @@ export default function AvailabilityPage() {
   }
 
   return (
-    <div style={{ padding: 32, maxWidth: 720 }}>
-      <span className="eyebrow" style={{ display: 'block', marginBottom: 6 }}>ADMINISTRACIÓN</span>
-      <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 32, fontWeight: 500, letterSpacing: '-0.01em', margin: '0 0 32px' }}>Disponibilidad</h1>
+    <div className="page-wrap--mid">
+      <span className="eyebrow eyebrow-block">ADMINISTRACIÓN</span>
+      <h1 className="page-title page-title--mb">Disponibilidad</h1>
 
       {/* Weekly schedule */}
-      <div className="panel" style={{ marginBottom: 28 }}>
-        <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 500, margin: '0 0 24px', letterSpacing: '-0.01em' }}>Horario semanal</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="panel panel--mb-sm">
+        <h2 className="section-title">Horario semanal</h2>
+        <div className="sched-col">
           {schedule.map(({ dayOfWeek, startTime, endTime, isActive }) => (
-            <div key={dayOfWeek} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <label className="toggle" style={{ flexShrink: 0 }}>
+            <div key={dayOfWeek} className="sched-row">
+              <label className="toggle toggle--noflex">
                 <input type="checkbox" checked={isActive} onChange={e => updateDay(dayOfWeek, 'isActive', e.target.checked)} />
                 <span className="toggle-track" />
               </label>
-              <span style={{ width: 96, fontSize: 14, fontWeight: isActive ? 500 : 400, color: isActive ? 'var(--c-ink)' : 'var(--c-muted)' }}>{DAYS[dayOfWeek]}</span>
+              <span className="sched-day-label" style={{ fontWeight: isActive ? 500 : 400, color: isActive ? 'var(--c-ink)' : 'var(--c-muted)' }}>{DAYS[dayOfWeek]}</span>
               {isActive && (
                 <>
-                  <input type="time" value={startTime} onChange={e => updateDay(dayOfWeek, 'startTime', e.target.value)} className="input" style={{ width: 110 }} />
-                  <span style={{ color: 'var(--c-muted)', fontSize: 13 }}>hasta</span>
-                  <input type="time" value={endTime} onChange={e => updateDay(dayOfWeek, 'endTime', e.target.value)} className="input" style={{ width: 110 }} />
+                  <input type="time" value={startTime} onChange={e => updateDay(dayOfWeek, 'startTime', e.target.value)} className="input input-time" />
+                  <span className="sched-sep">hasta</span>
+                  <input type="time" value={endTime} onChange={e => updateDay(dayOfWeek, 'endTime', e.target.value)} className="input input-time" />
                 </>
               )}
-              {!isActive && <span style={{ fontSize: 13, color: 'var(--c-muted-30)' }}>Cerrado</span>}
+              {!isActive && <span className="sched-closed">Cerrado</span>}
             </div>
           ))}
         </div>
-        <div style={{ marginTop: 24 }}>
+        <div className="mt-24">
           <button className="btn btn-primary" onClick={saveSchedule} disabled={saving}>
             {saved ? '¡Guardado!' : saving ? 'Guardando…' : 'Guardar horario'}
           </button>
@@ -94,33 +94,33 @@ export default function AvailabilityPage() {
 
       {/* Blocked dates */}
       <div className="panel">
-        <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 22, fontWeight: 500, margin: '0 0 24px', letterSpacing: '-0.01em' }}>Fechas bloqueadas</h2>
+        <h2 className="section-title">Fechas bloqueadas</h2>
 
-        <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 140 }}>
+        <div className="form-row mb-20">
+          <div className="form-col-1">
             <label className="label">Fecha</label>
             <input type="date" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} />
           </div>
-          <div style={{ flex: 2, minWidth: 200 }}>
+          <div className="form-col-2">
             <label className="label">Motivo (opcional)</label>
             <input className="input" value={newReason} onChange={e => setNewReason(e.target.value)} placeholder="Vacaciones, feriado…" />
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div className="flex-end">
             <button className="btn btn-outline" onClick={addBlockedDate}>Bloquear fecha</button>
           </div>
         </div>
 
         {blockedDates.length === 0 ? (
-          <p style={{ color: 'var(--c-muted)', fontSize: 14 }}>No hay fechas bloqueadas.</p>
+          <p className="text-muted" style={{ fontSize: 14 }}>No hay fechas bloqueadas.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="stack-sm">
             {blockedDates.map(bd => (
-              <div key={bd.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--c-bg)', borderRadius: 'var(--r-2)', border: '1px solid var(--c-line)' }}>
+              <div key={bd.id} className="blocked-row">
                 <div>
-                  <span style={{ fontFamily: 'var(--f-mono)', fontSize: 13 }}>{new Date(bd.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                  {bd.reason && <span style={{ marginLeft: 12, fontSize: 13, color: 'var(--c-muted)' }}>{bd.reason}</span>}
+                  <span className="blocked-date">{new Date(bd.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  {bd.reason && <span className="blocked-reason">{bd.reason}</span>}
                 </div>
-                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--c-danger)' }} onClick={() => removeBlocked(bd.id)}>Quitar</button>
+                <button className="btn btn-ghost btn-sm btn-danger" onClick={() => removeBlocked(bd.id)}>Quitar</button>
               </div>
             ))}
           </div>

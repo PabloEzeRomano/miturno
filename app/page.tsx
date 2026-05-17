@@ -12,11 +12,10 @@ export default function LandingPage() {
       <Nav />
       <main>
         <Hero />
-        {/* Strip */}
-        <div style={{ background: 'var(--c-bg)', borderBottom: '1px solid var(--c-line)', padding: '28px 0' }}>
-          <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--c-muted)' }}>Pensado para peluquerías de barrio &amp; barberías independientes</span>
-            <span style={{ fontFamily: 'var(--f-display)', fontStyle: 'italic', color: 'var(--c-ink-60)', fontSize: 16 }}><em style={{ color: 'var(--c-gold-deep)' }}>«</em> Tomá turnos mientras cortás. <em style={{ color: 'var(--c-gold-deep)' }}>»</em></span>
+        <div className="landing-strip">
+          <div className="container">
+            <span className="strip-label">Pensado para peluquerías de barrio &amp; barberías independientes</span>
+            <span className="strip-quote"><em>«</em> Tomá turnos mientras cortás. <em>»</em></span>
           </div>
         </div>
         <HowItWorks />

@@ -52,54 +52,54 @@ function ConfirmContent({ slug }: { slug: string }) {
   }
 
   if (notFound) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ color: 'var(--c-muted)' }}>Turno no encontrado.</p>
-        <Link href="/" className="btn btn-primary" style={{ marginTop: 16, display: 'inline-flex' }}>Volver al inicio</Link>
+    <div className="confirm-not-found">
+      <div className="confirm-not-found-inner">
+        <p className="text-muted">Turno no encontrado.</p>
+        <Link href="/" className="btn btn-primary" style={{ marginTop: 16 }}>Volver al inicio</Link>
       </div>
     </div>
   )
 
   if (!appt) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: 'var(--c-muted)', fontFamily: 'var(--f-mono)', fontSize: 13 }}>Cargando…</p>
+    <div className="confirm-loading">
+      <p>Cargando…</p>
     </div>
   )
 
   const startsAt = new Date(appt.startsAt)
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--c-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 480 }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 40 }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+    <div className="confirm-page">
+      <div className="confirm-box">
+        <div className="confirm-logo">
+          <Link href="/" className="auth-logo">
             <BrandMark size={28} />
             <Wordmark size={20} />
           </Link>
         </div>
 
-        <div className="panel" style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ width: 56, height: 56, background: 'var(--c-success-bg)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+        <div className="panel panel--text-center panel--mb-lg">
+          <div className="confirm-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--c-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </div>
-          <span className="eyebrow" style={{ display: 'block', marginBottom: 12 }}>TURNO RESERVADO</span>
-          <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 30, fontWeight: 500, letterSpacing: '-0.01em', margin: '0 0 24px' }}>
+          <span className="eyebrow confirm-eyebrow">TURNO RESERVADO</span>
+          <h1 className="confirm-h1">
             ¡Todo listo, {appt.clientName.split(' ')[0]}!
           </h1>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, textAlign: 'left', background: 'var(--c-bg)', borderRadius: 'var(--r-2)', padding: '20px 24px', marginBottom: 24 }}>
+          <div className="confirm-detail">
             <Row label="Servicio" value={appt.service.name} />
             <Row label="Local" value={appt.barber.shopName} />
             <Row label="Fecha" value={startsAt.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })} />
             <Row label="Hora" value={startsAt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} mono />
           </div>
 
-          <button className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }} onClick={downloadICS}>
+          <button className="btn btn-outline btn-full btn-mb" onClick={downloadICS}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Agregar al calendario
           </button>
 
-          <Link href={`/${appt.barber.slug}`} className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
+          <Link href={`/${appt.barber.slug}`} className="btn btn-ghost btn-full">
             Reservar otro turno
           </Link>
         </div>
@@ -112,14 +112,14 @@ function Row({ label, value, mono = false }: { label: string; value: string; mon
   return (
     <div>
       <span className="label">{label}</span>
-      <span style={{ fontSize: 15, fontFamily: mono ? 'var(--f-mono)' : 'var(--f-body)', color: 'var(--c-ink)' }}>{value}</span>
+      <span className={mono ? 'row-value row-value--mono' : 'row-value'}>{value}</span>
     </div>
   )
 }
 
 export default function ConfirmPage({ params }: { params: { slug: string } }) {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ fontFamily: 'var(--f-mono)', fontSize: 13, color: 'var(--c-muted)' }}>Cargando…</p></div>}>
+    <Suspense fallback={<div className="confirm-loading"><p>Cargando…</p></div>}>
       <ConfirmContent slug={params.slug} />
     </Suspense>
   )
