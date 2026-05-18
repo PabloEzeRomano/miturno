@@ -96,7 +96,7 @@ export function Features() {
                 </div>
                 <div className="page-url-value">turnos.gemm-apps.com/<em className="field-gold">carlos</em></div>
                 <div className="page-url-meta">
-                  <span>Tu slug</span><span>no se cambia</span>
+                  <span>Tu URL</span><span>no se cambia</span>
                 </div>
               </div>
               <div className="qr-mock" />

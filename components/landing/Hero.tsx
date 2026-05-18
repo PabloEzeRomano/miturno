@@ -18,7 +18,7 @@ export function Hero() {
               Tu peluquería,<br/><em>online en minutos.</em>
             </h1>
             <p className="hero-body">
-              Una agenda simple, una página propia para que tus clientes reserven solos, y vos atendés tranquilo. Sin comisiones, sin contratos, sin apps que bajar.
+              Tus clientes reservan solos desde tu link. Vos dejás de contestar <em>&ldquo;¿tenés lugar el viernes?&rdquo;</em> y recuperás horas para atender. Sin comisiones, sin contratos, sin apps que bajar.
             </p>
             <div className="hero-ctas">
               <Link href="/signup" className="btn btn-gold btn-lg btn-arrow">
@@ -29,9 +29,9 @@ export function Hero() {
             </div>
             <div className="hero-stats">
               {[
-                { num: '14 días', lbl: 'PRUEBA GRATIS' },
-                { num: '2 min', lbl: 'DE SETUP' },
-                { num: '0%', lbl: 'COMISIÓN POR TURNO' },
+                { num: '2 min', lbl: 'TODO CONFIGURADO' },
+                { num: '0%', lbl: 'COMISIÓN' },
+                { num: '5 hs / semana', lbl: 'MENOS DE WHATSAPP' },
               ].map(({ num, lbl }) => (
                 <div key={lbl} className="hero-stat">
                   <span className="hero-stat-num">{num}</span>
@@ -43,9 +43,9 @@ export function Hero() {
 
           {/* Device mockup */}
           <div className="hero-mockup">
-            <div className="hero-mockup-bg">
+            {/* <div className="hero-mockup-bg">
               <span className="hero-mockup-url">turnos.gemm-apps.com/carlos</span>
-            </div>
+            </div> */}
 
             {/* Float top */}
             <div className="hero-float hero-float--top">
