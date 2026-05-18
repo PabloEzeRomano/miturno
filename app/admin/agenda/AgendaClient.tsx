@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { NewTurnoDrawer } from '@/components/admin/NewTurnoDrawer'
 
 type Appointment = {
   id: string
@@ -11,6 +12,8 @@ type Appointment = {
   status: string
   service: { name: string; durationMins: number; price: number }
 }
+
+type Service = { id: string; name: string; durationMins: number; price: number }
 
 const STATUS_LABELS: Record<string, string> = {
   confirmed: 'Confirmado',
@@ -50,7 +53,7 @@ function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 }
 
-export function AgendaClient({ barberId, slug, shopName }: { barberId: string; slug: string; shopName: string }) {
+export function AgendaClient({ barberId, slug, shopName, services }: { barberId: string; slug: string; shopName: string; services: Service[] }) {
   const [view, setView] = useState<'week' | 'day'>('week')
   const [base, setBase] = useState(new Date())
   const [statusFilter, setStatusFilter] = useState('all')
@@ -59,12 +62,18 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  const [formOpen, setFormOpen] = useState(false)
+
   const weekDates = getWeekDates(base)
 
   const load = useCallback(async () => {
-    const from = view === 'week' ? weekDates[0].toISOString() : new Date(base.setHours(0, 0, 0, 0)).toISOString()
-    const to = view === 'week' ? weekDates[6].toISOString() : new Date(base.setHours(23, 59, 59, 999)).toISOString()
-    const params = new URLSearchParams({ from, to, ...(statusFilter !== 'all' && { status: statusFilter }) })
+    const fromBase = view === 'week' ? weekDates[0] : base
+    const toBase = view === 'week' ? weekDates[6] : base
+    const from = new Date(fromBase)
+    from.setHours(0, 0, 0, 0)
+    const to = new Date(toBase)
+    to.setHours(23, 59, 59, 999)
+    const params = new URLSearchParams({ from: from.toISOString(), to: to.toISOString(), ...(statusFilter !== 'all' && { status: statusFilter }) })
     const res = await fetch(`/api/appointments?${params}`)
     if (res.ok) setAppointments(await res.json())
   }, [view, base, statusFilter])
@@ -88,6 +97,10 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
     setTimeout(() => setCopied(false), 2000)
   }
 
+  function openForm() {
+    setFormOpen(true)
+  }
+
   const displayDates = view === 'week' ? weekDates : [base]
 
   return (
@@ -99,6 +112,7 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
           <h1 className="page-title">{shopName}</h1>
         </div>
         <div className="flex-wrap-sm">
+          <button className="btn btn-gold btn-sm" onClick={openForm}>+ Nuevo turno</button>
           <button className="btn btn-outline btn-sm" onClick={copyLink}>{copied ? '¡Copiado!' : 'Copiar link'}</button>
           <div className="view-toggle">
             {(['week', 'day'] as const).map(v => (
@@ -171,7 +185,16 @@ export function AgendaClient({ barberId, slug, shopName }: { barberId: string; s
         </div>
       )}
 
-      {/* Drawer */}
+      <NewTurnoDrawer
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onCreated={load}
+        barberId={barberId}
+        slug={slug}
+        services={services}
+      />
+
+      {/* Appointment detail Drawer */}
       {drawerOpen && selected && (
         <>
           <div onClick={() => { setDrawerOpen(false); setSelected(null) }} className="drawer-overlay" />
