@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { TrialGate } from '@/components/admin/TrialGate'
+import { PendingActivation } from '@/components/admin/PendingActivation'
 import { Sidebar } from '@/components/admin/Sidebar'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -14,8 +14,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const barber = await prisma.barber.findUnique({ where: { id: barberId } })
   if (!barber) redirect('/login')
 
-  if (barber.trialEndsAt < new Date() && !barber.isActive) {
-    return <TrialGate />
+  if (!barber.isActive) {
+    return <PendingActivation />
   }
 
   return (

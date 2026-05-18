@@ -13,8 +13,6 @@ const prisma = new PrismaClient({ adapter })
 
 async function main() {
   const hashedPassword = await bcrypt.hash('demo1234', 12)
-  const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-
   const barber = await prisma.barber.upsert({
     where: { email: 'carlos@corturno.com' },
     update: {},
@@ -24,7 +22,6 @@ async function main() {
       password: hashedPassword,
       slug: 'carlos',
       shopName: 'Barbería Ruiz',
-      trialEndsAt,
       isActive: true,
       services: {
         create: [

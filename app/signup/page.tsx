@@ -44,7 +44,7 @@ export default function SignupPage() {
 
         <div className="panel">
           <h1 className="auth-title">Creá tu cuenta</h1>
-          <p className="auth-sub">14 días gratis. Sin tarjeta de crédito.</p>
+          <p className="auth-sub">Crea tu cuenta y te activamos a la brevedad.</p>
 
           <form onSubmit={handleSubmit} className="form-col">
             <div>
