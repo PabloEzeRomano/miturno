@@ -535,6 +535,136 @@ button {
   margin-bottom: 16px;
 }
 
+/* ---- Service table (signup step 2) ---- */
+.svc-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.svc-row {
+  display: grid;
+  grid-template-columns: 1fr 75px 100px 20px;
+  gap: 10px;
+  align-items: center;
+}
+.svc-head {
+  padding: 0 0 4px;
+}
+.svc-head .label {
+  margin-bottom: 0;
+}
+.svc-head > :last-child {
+  display: none;
+}
+
+.input-affix {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.input-affix .input {
+  font-variant-numeric: tabular-nums;
+}
+.input-affix .pre,
+.input-affix .suf {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--c-muted);
+  font-size: 13px;
+  font-family: var(--f-mono);
+  pointer-events: none;
+  letter-spacing: 0.02em;
+}
+.input-affix .pre {
+  left: 12px;
+}
+.input-affix .suf {
+  right: 12px;
+}
+.input-affix.has-pre .input {
+  padding-left: 26px;
+}
+.input-affix.has-suf .input {
+  padding-right: 36px;
+}
+
+.input[type='number']::-webkit-inner-spin-button,
+.input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.svc-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-2);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--c-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.svc-del:hover {
+  background: var(--c-danger-bg);
+  color: var(--c-danger);
+  border-color: var(--c-danger-bg);
+}
+
+.svc-add-row {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--c-line);
+}
+.btn-add {
+  background: transparent;
+  border: 1px dashed var(--c-muted-30);
+  color: var(--c-ink);
+  padding: 12px 16px;
+  border-radius: var(--r-2);
+  font-family: var(--f-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s;
+}
+.btn-add:hover {
+  border-color: var(--c-ink);
+  background: var(--c-bg);
+}
+.btn-add .plus {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--c-gold);
+  color: var(--c-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  padding-bottom: 3px;
+  font-weight: 600;
+}
+
+.svc-footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--c-line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
 /* ---- Sidebar ---- */
 .sidebar {
   width: 240px;
