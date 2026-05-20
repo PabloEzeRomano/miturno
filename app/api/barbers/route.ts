@@ -8,7 +8,7 @@ import { Resend } from 'resend'
 
 const NOTIFICATION_EMAIL = 'pabloezeromano@gmail.com'
 
-async function sendNotification(name: string, shopName: string, email: string, phone: string | null, slug: string) {
+async function sendNotification(name: string, shopName: string, email: string, phone: string, slug: string) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not configured — skipping notification.')
     return
@@ -23,7 +23,7 @@ async function sendNotification(name: string, shopName: string, email: string, p
         `Nombre: ${name}`,
         `Local: ${shopName}`,
         `Email: ${email}`,
-        `Teléfono: ${phone || 'no ingresado'}`,
+        `Teléfono: ${phone}`,
         `Slug: turnos.gemm-apps.com/${slug}`,
       ].join('\n'),
     })
@@ -34,9 +34,9 @@ async function sendNotification(name: string, shopName: string, email: string, p
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, phone, shopName } = await req.json()
+    const { name, email, password, phone, shopName, services } = await req.json()
 
-    if (!name || !email || !password || !shopName) {
+    if (!name || !email || !password || !phone || !shopName) {
       return NextResponse.json({ error: 'Faltan campos requeridos.' }, { status: 400 })
     }
     if (password.length < 8) {
@@ -66,15 +66,19 @@ export async function POST(req: NextRequest) {
           password: hashedPassword,
           slug,
           shopName,
-          phone: phone || null,
+          phone,
           isActive: false,
           services: {
-            create: [
+            create: (services?.length ? services : [
               { name: 'Corte', durationMins: 30, price: 3500 },
               { name: 'Corte + Barba', durationMins: 45, price: 5000 },
               { name: 'Puntas', durationMins: 30, price: 2500 },
               { name: 'Full Color', durationMins: 45, price: 7500 },
-            ],
+            ]).map((s: { name: string; durationMins: number; price: number }) => ({
+              name: s.name,
+              durationMins: s.durationMins,
+              price: s.price,
+            })),
           },
           availability: {
             create: [1, 2, 3, 4, 5, 6].map((day) => ({

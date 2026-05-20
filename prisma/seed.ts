@@ -22,6 +22,7 @@ async function main() {
       password: hashedPassword,
       slug: 'carlos',
       shopName: 'Barbería Ruiz',
+      phone: '+54 9 11 1234-5678',
       isActive: true,
       services: {
         create: [
