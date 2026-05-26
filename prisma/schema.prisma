@@ -8,30 +8,32 @@ datasource db {
 }
 
 model Barber {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  password     String
-  slug         String        @unique
-  shopName     String
-  phone        String
-  isActive     Boolean       @default(false)
-  createdAt    DateTime      @default(now())
-  services     Service[]
-  appointments Appointment[]
-  availability Availability[]
-  blockedDates BlockedDate[]
+  id                   String                 @id @default(cuid())
+  name                 String
+  email                String                 @unique
+  password             String
+  slug                 String                 @unique
+  shopName             String
+  phone                String
+  isActive             Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  services             Service[]
+  appointments         Appointment[]
+  availability         Availability[]
+  blockedDates         BlockedDate[]
+  recurringAppointments RecurringAppointment[]
 }
 
 model Service {
-  id           String        @id @default(cuid())
-  barberId     String
-  barber       Barber        @relation(fields: [barberId], references: [id])
-  name         String
-  durationMins Int
-  price        Float
-  isActive     Boolean       @default(true)
-  appointments Appointment[]
+  id                   String                 @id @default(cuid())
+  barberId             String
+  barber               Barber                 @relation(fields: [barberId], references: [id])
+  name                 String
+  durationMins         Int
+  price                Float
+  isActive             Boolean                @default(true)
+  appointments         Appointment[]
+  recurringAppointments RecurringAppointment[]
 }
 
 model Availability {
@@ -47,25 +49,48 @@ model Availability {
 }
 
 model BlockedDate {
-  id       String   @id @default(cuid())
+  id       String    @id @default(cuid())
   barberId String
-  barber   Barber   @relation(fields: [barberId], references: [id])
+  barber   Barber    @relation(fields: [barberId], references: [id])
   date     DateTime
+  endDate  DateTime?
   reason   String?
 }
 
 model Appointment {
-  id           String   @id @default(cuid())
+  id                      String                @id @default(cuid())
+  barberId                String
+  barber                  Barber                @relation(fields: [barberId], references: [id])
+  serviceId               String
+  service                 Service               @relation(fields: [serviceId], references: [id])
+  clientName              String
+  clientPhone             String
+  clientEmail             String?
+  startsAt                DateTime
+  endsAt                  DateTime
+  status                  String                @default("confirmed")
+  reminderSent            Boolean               @default(false)
+  createdAt               DateTime              @default(now())
+  recurringAppointmentId  String?
+  recurringAppointment    RecurringAppointment? @relation(fields: [recurringAppointmentId], references: [id])
+}
+
+model RecurringAppointment {
+  id           String        @id @default(cuid())
   barberId     String
-  barber       Barber   @relation(fields: [barberId], references: [id])
+  barber       Barber        @relation(fields: [barberId], references: [id], onDelete: Cascade)
   serviceId    String
-  service      Service  @relation(fields: [serviceId], references: [id])
+  service      Service       @relation(fields: [serviceId], references: [id])
   clientName   String
   clientPhone  String
   clientEmail  String?
-  startsAt     DateTime
-  endsAt       DateTime
-  status       String   @default("confirmed")
-  reminderSent Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  frequency    String        // "weekly" | "biweekly"
+  dayOfWeek    Int           // 0=Sun, 1=Mon...6=Sat
+  time         String        // "HH:mm"
+  startDate    DateTime
+  endDate      DateTime?
+  status       String        @default("active")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
 }
