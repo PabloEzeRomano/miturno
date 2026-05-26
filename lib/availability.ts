@@ -32,7 +32,10 @@ export async function getAvailableSlots(
   const blocked = await prisma.blockedDate.findFirst({
     where: {
       barberId,
-      date: { gte: dateStart, lte: dateEnd },
+      OR: [
+        { date: { gte: dateStart, lte: dateEnd }, endDate: null },
+        { date: { lte: dateEnd }, endDate: { gte: dateStart } },
+      ],
     },
   })
   if (blocked) return []

@@ -3,8 +3,14 @@ import { useState, useEffect } from 'react'
 
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
+function parseDMY(s: string): string {
+  const [d, m, y] = s.split('/')
+  if (!d || !m || !y) return ''
+  return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+}
+
 type ScheduleItem = { dayOfWeek: number; startTime: string; endTime: string; isActive: boolean }
-type BlockedDate = { id: string; date: string; reason: string | null }
+type BlockedDate = { id: string; date: string; endDate: string | null; reason: string | null }
 
 export default function AvailabilityPage() {
   const [schedule, setSchedule] = useState<ScheduleItem[]>(
@@ -12,6 +18,7 @@ export default function AvailabilityPage() {
   )
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([])
   const [newDate, setNewDate] = useState('')
+  const [newEndDate, setNewEndDate] = useState('')
   const [newReason, setNewReason] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -46,9 +53,18 @@ export default function AvailabilityPage() {
   }
 
   async function addBlockedDate() {
-    if (!newDate) return
-    await fetch('/api/blocked-dates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: newDate, reason: newReason || null }) })
+    const parsed = parseDMY(newDate)
+    if (!parsed) return
+    const parsedEnd = newEndDate ? parseDMY(newEndDate) : ''
+    if (newEndDate && !parsedEnd) return
+    if (parsedEnd && parsedEnd < parsed) return
+    await fetch('/api/blocked-dates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: parsed, endDate: parsedEnd || null, reason: newReason || null }),
+    })
     setNewDate('')
+    setNewEndDate('')
     setNewReason('')
     loadBlocked()
   }
@@ -98,10 +114,14 @@ export default function AvailabilityPage() {
 
         <div className="form-row mb-20">
           <div className="form-col-1">
-            <label className="label">Fecha</label>
-            <input type="date" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} />
+            <label className="label">Desde</label>
+            <input type="text" className="input" value={newDate} onChange={e => setNewDate(e.target.value)} placeholder="dd/mm/aaaa" inputMode="numeric" />
           </div>
-          <div className="form-col-2">
+          <div className="form-col-1">
+            <label className="label">Hasta <span className="text-muted" style={{ fontWeight: 400 }}>(opcional)</span></label>
+            <input type="text" className="input" value={newEndDate} onChange={e => setNewEndDate(e.target.value)} placeholder="dd/mm/aaaa" inputMode="numeric" />
+          </div>
+          <div className="form-col-1">
             <label className="label">Motivo (opcional)</label>
             <input className="input" value={newReason} onChange={e => setNewReason(e.target.value)} placeholder="Vacaciones, feriado…" />
           </div>
@@ -114,15 +134,25 @@ export default function AvailabilityPage() {
           <p className="text-muted" style={{ fontSize: 14 }}>No hay fechas bloqueadas.</p>
         ) : (
           <div className="stack-sm">
-            {blockedDates.map(bd => (
-              <div key={bd.id} className="blocked-row">
-                <div>
-                  <span className="blocked-date">{new Date(bd.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                  {bd.reason && <span className="blocked-reason">{bd.reason}</span>}
+            {blockedDates.map(bd => {
+              const fmt = (d: Date) =>
+                `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+              const start = new Date(bd.date)
+              let display = fmt(start)
+              if (bd.endDate) {
+                const end = new Date(bd.endDate)
+                display = `${fmt(start)} → ${fmt(end)}`
+              }
+              return (
+                <div key={bd.id} className="blocked-row">
+                  <div>
+                    <span className="blocked-date">{display}</span>
+                    {bd.reason && <span className="blocked-reason">{bd.reason}</span>}
+                  </div>
+                  <button className="btn btn-ghost btn-sm btn-danger" onClick={() => removeBlocked(bd.id)}>Quitar</button>
                 </div>
-                <button className="btn btn-ghost btn-sm btn-danger" onClick={() => removeBlocked(bd.id)}>Quitar</button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
