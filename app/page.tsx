@@ -1,3 +1,4 @@
+import { auth } from '@/lib/auth'
 import { Nav } from '@/components/landing/Nav'
 import { Hero } from '@/components/landing/Hero'
 import { HowItWorks } from '@/components/landing/HowItWorks'
@@ -6,10 +7,13 @@ import { Pricing } from '@/components/landing/Pricing'
 import { FAQ } from '@/components/landing/FAQ'
 import { Footer } from '@/components/landing/Footer'
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth()
+  const isAuthenticated = !!session
+
   return (
     <>
-      <Nav />
+      <Nav isAuthenticated={isAuthenticated} />
       <main>
         <Hero />
         <div className="landing-strip">

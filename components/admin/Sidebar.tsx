@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
@@ -21,34 +22,71 @@ const navItems = [
 
 export function Sidebar({ barberName }: { barberName: string }) {
   const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', handler)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handler)
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
+  useEffect(() => { setOpen(false) }, [pathname])
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
+    <>
+      <div className="sidebar-mobile-bar">
         <Link href="/" className="sidebar-logo">
-          <BrandMark size={28} />
-          <Wordmark size={18} />
+          <BrandMark size={22} />
+          <Wordmark size={15} />
         </Link>
-      </div>
-
-      <nav className="sidebar-nav">
-        {navItems.map(({ href, label, icon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
-          return (
-            <Link key={href} href={href} className={`sidebar-link${active ? ' sidebar-link--active' : ''}`}>
-              {icon}
-              {label}
-            </Link>
-          )
-        })}
-      </nav>
-
-      <div className="sidebar-footer">
-        <div className="sidebar-name">{barberName}</div>
-        <button className="sidebar-logout" onClick={() => signOut({ callbackUrl: '/login' })}>
-          Cerrar sesión
+        <button
+          className={`sidebar-hamburger${open ? ' sidebar-hamburger--open' : ''}`}
+          onClick={() => setOpen(!open)}
+          aria-label="Abrir menú"
+        >
+          <span /><span /><span />
         </button>
       </div>
-    </aside>
+
+      <aside className={`sidebar${open ? ' sidebar--open' : ''}`}>
+        <div className="sidebar-header">
+          <Link href="/" className="sidebar-logo">
+            <BrandMark size={28} />
+            <Wordmark size={18} />
+          </Link>
+        </div>
+
+        <nav className="sidebar-nav">
+          {navItems.map(({ href, label, icon }) => {
+            const active = pathname === href || pathname.startsWith(href + '/')
+            return (
+              <Link key={href} href={href} className={`sidebar-link${active ? ' sidebar-link--active' : ''}`}>
+                {icon}
+                {label}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-name">{barberName}</div>
+          <button className="sidebar-logout" onClick={() => signOut({ callbackUrl: '/login' })}>
+            Cerrar sesión
+          </button>
+        </div>
+      </aside>
+
+      <div
+        className={`sidebar-overlay${open ? ' sidebar-overlay--open' : ''}`}
+        onClick={() => setOpen(false)}
+      />
+    </>
   )
 }
