@@ -73,7 +73,7 @@ export default function ProfilePage() {
           <div>
             <label className="label">Tu URL</label>
             <div className="field-mono">
-              turnos.gemm-apps.com/<em className="field-gold">{slug}</em>
+              {process.env.BASE_URL}<em className="field-gold">{slug}</em>
             </div>
             <p className="field-hint">Tu URL no se puede cambiar para no romper las reservas existentes.</p>
           </div>

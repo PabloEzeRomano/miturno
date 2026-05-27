@@ -24,7 +24,7 @@ async function sendNotification(name: string, shopName: string, email: string, p
         `Local: ${shopName}`,
         `Email: ${email}`,
         `Teléfono: ${phone}`,
-        `Slug: turnos.gemm-apps.com/${slug}`,
+        `Slug: ${process.env.BASE_URL}${slug}`,
       ].join('\n'),
     })
   } catch (err) {

@@ -50,7 +50,7 @@ export function Footer() {
 
         <div className="footer-bottom">
           <span>© 2026 Corturno · un producto de gemm·apps</span>
-          <span className="footer-url">turnos.gemm-apps.com</span>
+          <span className="footer-url">{process.env.BASE_URL}</span>
         </div>
       </div>
     </footer>

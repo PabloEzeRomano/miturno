@@ -94,7 +94,7 @@ export function Features() {
                 <div className="page-url-row">
                   <span className="page-url-dot" />conexión segura · publicada
                 </div>
-                <div className="page-url-value">turnos.gemm-apps.com/<em className="field-gold">carlos</em></div>
+                <div className="page-url-value">{process.env.BASE_URL}<em className="field-gold">carlos</em></div>
                 <div className="page-url-meta">
                   <span>Tu URL</span><span>no se cambia</span>
                 </div>

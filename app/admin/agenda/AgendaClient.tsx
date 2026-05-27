@@ -84,7 +84,7 @@ export function AgendaClient({ barberId, slug, shopName, services, availability 
   useEffect(() => { load() }, [load])
 
   function copyLink() {
-    navigator.clipboard.writeText(`https://turnos.gemm-apps.com/${slug}`)
+    navigator.clipboard.writeText(`${process.env.BASE_URL}${slug}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

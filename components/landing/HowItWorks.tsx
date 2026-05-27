@@ -56,7 +56,7 @@ export function HowItWorks() {
             <p className="step-p">Tus clientes reservan solos. Vos ves todo desde la agenda. Sin idas y vueltas por WhatsApp.</p>
             <div className="step-demo">
               <div className="step-link-bar">
-                <span>turnos.gemm-apps.com/carlos</span>
+                <span>{process.env.BASE_URL}carlos</span>
                 <span className="step-copy-btn">Copiar</span>
               </div>
             </div>
