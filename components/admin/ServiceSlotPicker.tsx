@@ -15,6 +15,7 @@ export function ServiceSlotPicker({
   onSlotChange,
   excludeId,
   enabled,
+  userId,
 }: {
   services: Service[]
   slug: string
@@ -26,10 +27,11 @@ export function ServiceSlotPicker({
   onSlotChange: (slot: string) => void
   excludeId?: string
   enabled: boolean
+  userId?: string
 }) {
   const dateInputRef = useRef<HTMLInputElement>(null)
   const selService = services.find(s => s.id === serviceId)
-  const { slots, loading: slotsLoading } = useAvailableSlots(slug, date, serviceId, enabled, excludeId)
+  const { slots, loading: slotsLoading } = useAvailableSlots(slug, date, serviceId, enabled, excludeId, userId)
   const endTime = slot && selService ? calcEndTime(slot, selService.durationMins) : ''
 
   return (

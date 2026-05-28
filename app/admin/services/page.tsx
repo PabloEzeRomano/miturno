@@ -5,6 +5,7 @@ type Service = { id: string; name: string; durationMins: number; price: number; 
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([])
+  const [role, setRole] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [newSvc, setNewSvc] = useState({ name: '', durationMins: 30, price: 0 })
   const [editId, setEditId] = useState<string | null>(null)
@@ -12,8 +13,15 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(false)
 
   async function load() {
-    const res = await fetch('/api/services')
-    if (res.ok) setServices(await res.json())
+    const [svcRes, profileRes] = await Promise.all([
+      fetch('/api/services'),
+      fetch('/api/profile'),
+    ])
+    if (svcRes.ok) setServices(await svcRes.json())
+    if (profileRes.ok) {
+      const data = await profileRes.json()
+      setRole(data.role || '')
+    }
   }
   useEffect(() => { load() }, [])
 
@@ -38,6 +46,8 @@ export default function ServicesPage() {
     load()
   }
 
+  const isOwner = role === 'Owner'
+
   return (
     <div className="page-wrap">
       <div className="page-header">
@@ -45,11 +55,12 @@ export default function ServicesPage() {
           <span className="eyebrow eyebrow-block">ADMINISTRACIÓN</span>
           <h1 className="page-title">Servicios</h1>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAdd(!showAdd)}>+ Agregar servicio</button>
+        {isOwner && (
+          <button className="btn btn-primary" onClick={() => setShowAdd(!showAdd)}>+ Agregar servicio</button>
+        )}
       </div>
 
-      {/* Add form */}
-      {showAdd && (
+      {isOwner && showAdd && (
         <div className="panel panel--mb">
           <h3 className="svc-add-h3">Nuevo servicio</h3>
           <div className="svc-grid">
@@ -59,7 +70,7 @@ export default function ServicesPage() {
             </div>
             <div>
               <label className="label">Duración (min)</label>
-              <input className="input" type="number" value={newSvc.durationMins} onChange={e => setNewSvc(s => ({ ...s, durationMins: Number(e.target.value) }))} min={5} step={5} />
+              <input className="input" type="number" value={newSvc.durationMins} onChange={e => setNewSvc(s => ({ ...s, durationMins: Number(e.target.value) }))} min={5} />
             </div>
             <div>
               <label className="label">Precio ($)</label>
@@ -73,12 +84,11 @@ export default function ServicesPage() {
         </div>
       )}
 
-      {/* Table */}
       <div className="panel panel--flush">
         <table className="data-table">
           <thead>
             <tr>
-              {['Nombre', 'Duración', 'Precio', 'Estado', ''].map(h => (
+              {['Nombre', 'Duración', 'Precio', 'Estado', isOwner ? '' : null].filter(Boolean).map(h => (
                 <th key={h}>{h}</th>
               ))}
             </tr>
@@ -86,7 +96,7 @@ export default function ServicesPage() {
           <tbody>
             {services.map(svc => (
               <tr key={svc.id}>
-                {editId === svc.id ? (
+                {isOwner && editId === svc.id ? (
                   <>
                     <td className="td-edit"><input className="input" value={editData.name} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} /></td>
                     <td className="td-edit"><input className="input" type="number" value={editData.durationMins} onChange={e => setEditData(d => ({ ...d, durationMins: Number(e.target.value) }))} style={{ width: 80 }} /></td>
@@ -105,14 +115,20 @@ export default function ServicesPage() {
                     <td className="td-mono">{svc.durationMins} min</td>
                     <td className="td-price">${svc.price.toLocaleString('es-AR')}</td>
                     <td>
-                      <label className="toggle">
-                        <input type="checkbox" checked={svc.isActive} onChange={() => toggleActive(svc)} />
-                        <span className="toggle-track" />
-                      </label>
+                      {isOwner ? (
+                        <label className="toggle">
+                          <input type="checkbox" checked={svc.isActive} onChange={() => toggleActive(svc)} />
+                          <span className="toggle-track" />
+                        </label>
+                      ) : (
+                        <span style={{ fontSize: 13, color: 'var(--c-muted)' }}>{svc.isActive ? 'Activo' : 'Inactivo'}</span>
+                      )}
                     </td>
-                    <td>
-                      <button className="btn btn-ghost btn-sm" onClick={() => { setEditId(svc.id); setEditData({ name: svc.name, durationMins: svc.durationMins, price: svc.price }) }}>Editar</button>
-                    </td>
+                    {isOwner && (
+                      <td>
+                        <button className="btn btn-ghost btn-sm" onClick={() => { setEditId(svc.id); setEditData({ name: svc.name, durationMins: svc.durationMins, price: svc.price }) }}>Editar</button>
+                      </td>
+                    )}
                   </>
                 )}
               </tr>

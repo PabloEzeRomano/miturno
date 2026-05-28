@@ -7,6 +7,7 @@ export function useAvailableSlots(
   serviceId: string,
   enabled: boolean,
   excludeId?: string,
+  userId?: string,
 ) {
   const [slots, setSlots] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -19,6 +20,7 @@ export function useAvailableSlots(
     setLoading(true)
     const params = new URLSearchParams({ date, serviceId })
     if (excludeId) params.set('excludeId', excludeId)
+    if (userId) params.set('userId', userId)
     fetch(`/api/availability/${slug}?${params}`)
       .then(r => r.json())
       .then(data => {
@@ -26,7 +28,7 @@ export function useAvailableSlots(
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [date, serviceId, enabled, slug, excludeId])
+  }, [date, serviceId, enabled, slug, excludeId, userId])
 
   return { slots, loading }
 }

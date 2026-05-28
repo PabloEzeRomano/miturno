@@ -4,29 +4,40 @@ import { AgendaClient } from './AgendaClient'
 
 export default async function AgendaPage() {
   const session = await auth()
-  const barberId = (session as { barberId?: string }).barberId!
-  const slug = (session as { slug?: string }).slug!
-  const barber = await prisma.barber.findUnique({
-    where: { id: barberId },
-    select: { shopName: true },
+  const establishmentId = (session as { establishmentId?: string }).establishmentId!
+  const establishmentSlug = (session as { establishmentSlug?: string }).establishmentSlug!
+
+  const user = await prisma.user.findUnique({
+    where: { id: session!.user.id },
+    select: { role: true, establishment: { select: { shopName: true } } },
   })
+
   const services = await prisma.service.findMany({
-    where: { barberId, isActive: true },
+    where: { establishmentId, isActive: true },
     orderBy: { name: 'asc' },
     select: { id: true, name: true, durationMins: true, price: true },
   })
+
+  const users = await prisma.user.findMany({
+    where: { establishmentId, status: 'active' },
+    select: { id: true, name: true, role: true },
+    orderBy: { name: 'asc' },
+  })
+
   const availability = await prisma.availability.findMany({
-    where: { barberId },
+    where: { userId: session!.user.id },
     select: { dayOfWeek: true, isActive: true },
   })
 
   return (
     <AgendaClient
-      barberId={barberId}
-      slug={slug}
-      shopName={barber?.shopName || ''}
+      establishmentId={establishmentId}
+      slug={establishmentSlug}
+      shopName={user?.establishment?.shopName || ''}
       services={services}
       availability={availability}
+      role={user?.role || 'Staff'}
+      users={users}
     />
   )
 }

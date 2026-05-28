@@ -16,6 +16,7 @@ type Appointment = {
 }
 
 type Service = { id: string; name: string; durationMins: number; price: number }
+type User = { id: string; name: string; role: string }
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'var(--c-gold)',
@@ -56,7 +57,7 @@ function isWorkingDay(date: Date, availability: { dayOfWeek: number; isActive: b
   return avail ? avail.isActive : false
 }
 
-export function AgendaClient({ barberId, slug, shopName, services, availability }: { barberId: string; slug: string; shopName: string; services: Service[]; availability: { dayOfWeek: number; isActive: boolean }[] }) {
+export function AgendaClient({ establishmentId, slug, shopName, services, availability, role, users }: { establishmentId: string; slug: string; shopName: string; services: Service[]; availability: { dayOfWeek: number; isActive: boolean }[]; role: string; users: User[] }) {
   const [view, setView] = useState<'week' | 'day'>('week')
   const [base, setBase] = useState(new Date())
   const [statusFilter, setStatusFilter] = useState('all')
@@ -66,6 +67,7 @@ export function AgendaClient({ barberId, slug, shopName, services, availability 
   const [copied, setCopied] = useState(false)
 
   const [formOpen, setFormOpen] = useState(false)
+  const [filterUserId, setFilterUserId] = useState('')
 
   const weekDates = getWeekDates(base)
 
@@ -77,14 +79,15 @@ export function AgendaClient({ barberId, slug, shopName, services, availability 
     const to = new Date(toBase)
     to.setHours(23, 59, 59, 999)
     const params = new URLSearchParams({ from: from.toISOString(), to: to.toISOString(), ...(statusFilter !== 'all' && { status: statusFilter }) })
+    if (filterUserId) params.set('userId', filterUserId)
     const res = await fetch(`/api/appointments?${params}`)
     if (res.ok) setAppointments(await res.json())
-  }, [view, base, statusFilter])
+  }, [view, base, statusFilter, filterUserId])
 
   useEffect(() => { load() }, [load])
 
   function copyLink() {
-    navigator.clipboard.writeText(`${process.env.BASE_URL}${slug}`)
+    navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_BASE_URL}${slug}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -118,13 +121,29 @@ export function AgendaClient({ barberId, slug, shopName, services, availability 
         </div>
       </div>
 
-      {/* Status filter */}
+      {/* Filters */}
       <div className="filter-bar">
-        {[['all', 'Todos'], ['confirmed', 'Confirmados'], ['completed', 'Completados'], ['cancelled', 'Cancelados']].map(([val, label]) => (
-          <button key={val} onClick={() => setStatusFilter(val)} className={`filter-btn${statusFilter === val ? ' filter-btn--active' : ''}`}>
-            {label}
-          </button>
-        ))}
+        <div className="filter-row">
+          {[['all', 'Todos'], ['confirmed', 'Confirmados'], ['completed', 'Completados'], ['cancelled', 'Cancelados']].map(([val, label]) => (
+            <button key={val} onClick={() => setStatusFilter(val)} className={`filter-btn${statusFilter === val ? ' filter-btn--active' : ''}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {role === 'Owner' && users.length > 1 && (
+          <div className="filter-professional">
+            <select
+              className="select select-sm"
+              value={filterUserId}
+              onChange={e => setFilterUserId(e.target.value)}
+            >
+              <option value="">Todos los profesionales</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Date nav */}
@@ -192,9 +211,12 @@ export function AgendaClient({ barberId, slug, shopName, services, availability 
         open={formOpen}
         onClose={() => setFormOpen(false)}
         onCreated={load}
-        barberId={barberId}
+        establishmentId={establishmentId}
         slug={slug}
         services={services}
+        availability={availability}
+        users={users}
+        role={role}
       />
 
       {

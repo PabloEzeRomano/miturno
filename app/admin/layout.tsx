@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getCategoryDef } from '@/lib/categories'
+import { ThemeProvider } from '@/lib/theme-context'
 import { PendingActivation } from '@/components/admin/PendingActivation'
 import { Sidebar } from '@/components/admin/Sidebar'
 
@@ -8,22 +10,37 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await auth()
   if (!session) redirect('/login')
 
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) redirect('/login')
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) redirect('/login')
 
-  const barber = await prisma.barber.findUnique({ where: { id: barberId } })
-  if (!barber) redirect('/login')
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true, role: true, establishment: { include: { category: true } } },
+  })
+  if (!user) redirect('/login')
 
-  if (!barber.isActive) {
-    return <PendingActivation />
+  const establishment = user.establishment
+  if (!establishment) redirect('/login')
+
+  const categorySlug = establishment.category?.slug ?? 'barberia'
+  const category = getCategoryDef(categorySlug)
+
+  if (!establishment.isActive) {
+    return (
+      <ThemeProvider category={category}>
+        <PendingActivation />
+      </ThemeProvider>
+    )
   }
 
   return (
-    <div className="admin-shell">
-      <Sidebar barberName={barber.name} />
-      <main className="admin-main">
-        {children}
-      </main>
-    </div>
+    <ThemeProvider category={category}>
+      <div className="admin-shell">
+        <Sidebar userName={user.name} role={user.role} />
+        <main className="admin-main">
+          {children}
+        </main>
+      </div>
+    </ThemeProvider>
   )
 }

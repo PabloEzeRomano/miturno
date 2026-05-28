@@ -7,6 +7,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const [form, setForm] = useState({ name: '', phone: '', shopName: '' })
   const [slug, setSlug] = useState('')
+  const [role, setRole] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -17,6 +18,7 @@ export default function ProfilePage() {
     fetch('/api/profile').then(r => r.json()).then(data => {
       setForm({ name: data.name || '', phone: data.phone || '', shopName: data.shopName || '' })
       setSlug(data.slug || '')
+      setRole(data.role || '')
     }).catch(() => {})
   }, [])
 
@@ -63,7 +65,11 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className="label">Nombre del local</label>
-            <input className="input" value={form.shopName} onChange={e => setForm(f => ({ ...f, shopName: e.target.value }))} />
+            {role === 'Owner' ? (
+              <input className="input" value={form.shopName} onChange={e => setForm(f => ({ ...f, shopName: e.target.value }))} />
+            ) : (
+              <input className="input" value={form.shopName} disabled />
+            )}
           </div>
           <div>
             <label className="label">Teléfono</label>
@@ -73,7 +79,7 @@ export default function ProfilePage() {
           <div>
             <label className="label">Tu URL</label>
             <div className="field-mono">
-              {process.env.BASE_URL}<em className="field-gold">{slug}</em>
+              {process.env.NEXT_PUBLIC_BASE_URL}<em className="field-gold">{slug}</em>
             </div>
             <p className="field-hint">Tu URL no se puede cambiar para no romper las reservas existentes.</p>
           </div>
