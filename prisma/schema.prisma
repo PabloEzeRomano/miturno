@@ -7,27 +7,51 @@ datasource db {
   provider = "postgresql"
 }
 
-model Barber {
-  id                   String                 @id @default(cuid())
-  name                 String
-  email                String                 @unique
-  password             String
-  slug                 String                 @unique
-  shopName             String
-  phone                String
-  isActive             Boolean                @default(false)
-  createdAt            DateTime               @default(now())
-  services             Service[]
-  appointments         Appointment[]
-  availability         Availability[]
-  blockedDates         BlockedDate[]
+model Category {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  name          String
+  active        Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  establishments Establishment[]
+}
+
+model User {
+  id              String        @id @default(cuid())
+  name            String
+  email           String        @unique
+  password        String
+  phone           String?
+  role            String        @default("Owner")
+  status          String        @default("active")
+  inviteToken     String?       @unique
+  establishmentId String?
+  establishment   Establishment? @relation(fields: [establishmentId], references: [id])
+  availability    Availability[]
+  appointments    Appointment[]
+  createdAt       DateTime      @default(now())
+}
+
+model Establishment {
+  id            String         @id @default(cuid())
+  shopName      String
+  slug          String         @unique
+  phone         String
+  categoryId    String?
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  isActive      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  users         User[]
+  services      Service[]
+  appointments  Appointment[]
+  blockedDates  BlockedDate[]
   recurringAppointments RecurringAppointment[]
 }
 
 model Service {
   id                   String                 @id @default(cuid())
-  barberId             String
-  barber               Barber                 @relation(fields: [barberId], references: [id])
+  establishmentId      String
+  establishment        Establishment          @relation(fields: [establishmentId], references: [id])
   name                 String
   durationMins         Int
   price                Float
@@ -37,30 +61,32 @@ model Service {
 }
 
 model Availability {
-  id        String  @id @default(cuid())
-  barberId  String
-  barber    Barber  @relation(fields: [barberId], references: [id])
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   dayOfWeek Int
   startTime String
   endTime   String
   isActive  Boolean @default(true)
 
-  @@unique([barberId, dayOfWeek])
+  @@unique([userId, dayOfWeek])
 }
 
 model BlockedDate {
-  id       String    @id @default(cuid())
-  barberId String
-  barber   Barber    @relation(fields: [barberId], references: [id])
-  date     DateTime
-  endDate  DateTime?
-  reason   String?
+  id              String        @id @default(cuid())
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id])
+  date            DateTime
+  endDate         DateTime?
+  reason          String?
 }
 
 model Appointment {
   id                      String                @id @default(cuid())
-  barberId                String
-  barber                  Barber                @relation(fields: [barberId], references: [id])
+  establishmentId         String
+  establishment           Establishment         @relation(fields: [establishmentId], references: [id])
+  userId                  String
+  user                    User                  @relation(fields: [userId], references: [id])
   serviceId               String
   service                 Service               @relation(fields: [serviceId], references: [id])
   clientName              String
@@ -76,21 +102,21 @@ model Appointment {
 }
 
 model RecurringAppointment {
-  id           String        @id @default(cuid())
-  barberId     String
-  barber       Barber        @relation(fields: [barberId], references: [id], onDelete: Cascade)
-  serviceId    String
-  service      Service       @relation(fields: [serviceId], references: [id])
-  clientName   String
-  clientPhone  String
-  clientEmail  String?
-  frequency    String        // "weekly" | "biweekly"
-  dayOfWeek    Int           // 0=Sun, 1=Mon...6=Sat
-  time         String        // "HH:mm"
-  startDate    DateTime
-  endDate      DateTime?
-  status       String        @default("active")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  appointments Appointment[]
+  id            String        @id @default(cuid())
+  establishmentId String
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service       @relation(fields: [serviceId], references: [id])
+  clientName    String
+  clientPhone   String
+  clientEmail   String?
+  frequency     String        // "weekly" | "biweekly"
+  dayOfWeek     Int           // 0=Sun, 1=Mon...6=Sat
+  time          String        // "HH:mm"
+  startDate     DateTime
+  endDate       DateTime?
+  status        String        @default("active")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  appointments  Appointment[]
 }
