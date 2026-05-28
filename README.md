@@ -21,7 +21,7 @@ Tus clientes reservan solos desde tu link. Vos dejás de contestar "¿tenés lug
 ## Features
 
 ### Para el cliente
-- **Página pública** en `[BASE_URL]/[slug]` — sin apps, sin registro
+- **Página pública** en `[NEXT_PUBLIC_BASE_URL]/[slug]` — sin apps, sin registro
 - **Booking en 4 pasos**: servicio → fecha → horario → datos de contacto
 - **Confirmación** con descarga de archivo ICS (Agregar al calendario)
 

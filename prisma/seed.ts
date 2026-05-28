@@ -2,6 +2,7 @@ import { config } from 'dotenv'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 import { PrismaClient } from '../generated/prisma/client'
+import { getAllCategoryDefs } from '../lib/categories'
 
 config()
 config({ path: '.env.local', override: true })
@@ -12,17 +13,35 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
+  const categoryDefs = getAllCategoryDefs()
+
+  for (const cat of categoryDefs) {
+    await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: {
+        name: cat.name,
+        active: true,
+      },
+      create: {
+        slug: cat.slug,
+        name: cat.name,
+        active: true,
+      },
+    })
+  }
+
+  const barberCategory = await prisma.category.findUnique({ where: { slug: 'barberia' } })
+
   const hashedPassword = await bcrypt.hash('demo1234', 12)
-  const barber = await prisma.barber.upsert({
-    where: { email: 'carlos@corturno.com' },
+
+  const establishment = await prisma.establishment.upsert({
+    where: { slug: 'carlos' },
     update: {},
     create: {
-      name: 'Carlos Ruiz',
-      email: 'carlos@corturno.com',
-      password: hashedPassword,
-      slug: 'carlos',
       shopName: 'Barbería Ruiz',
+      slug: 'carlos',
       phone: '+54 9 11 1234-5678',
+      categoryId: barberCategory!.id,
       isActive: true,
       services: {
         create: [
@@ -32,18 +51,34 @@ async function main() {
           { name: 'Full Color', durationMins: 45, price: 7500 },
         ],
       },
-      availability: {
-        create: [1, 2, 3, 4, 5, 6].map((day) => ({
-          dayOfWeek: day,
-          startTime: '09:00',
-          endTime: '19:00',
-          isActive: true,
-        })),
-      },
     },
   })
 
-  console.log('Seeded barber:', barber.email)
+  const owner = await prisma.user.upsert({
+    where: { email: 'carlos@corturno.com' },
+    update: { establishmentId: establishment.id },
+    create: {
+      name: 'Carlos Ruiz',
+      email: 'carlos@corturno.com',
+      password: hashedPassword,
+      role: 'Owner',
+      establishmentId: establishment.id,
+    },
+  })
+
+  await prisma.availability.deleteMany({ where: { userId: owner.id } })
+  await prisma.availability.createMany({
+    data: [1, 2, 3, 4, 5, 6].map((day) => ({
+      userId: owner.id,
+      dayOfWeek: day,
+      startTime: '09:00',
+      endTime: '19:00',
+      isActive: true,
+    })),
+  })
+
+  console.log('Seeded categories:', categoryDefs.map(c => c.slug).join(', '))
+  console.log('Seeded establishment:', establishment.slug)
 }
 
 main()
