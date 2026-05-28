@@ -10,7 +10,7 @@ type Appointment = {
   startsAt: string
   endsAt: string
   service: { name: string }
-  barber: { shopName: string; slug: string }
+  establishment: { shopName: string; slug: string }
 }
 
 function formatICSDate(d: Date): string {
@@ -38,8 +38,8 @@ function ConfirmContent({ slug }: { slug: string }) {
       'BEGIN:VEVENT',
       `DTSTART:${formatICSDate(new Date(appt.startsAt))}`,
       `DTEND:${formatICSDate(new Date(appt.endsAt))}`,
-      `SUMMARY:${appt.service.name} — ${appt.barber.shopName}`,
-      `DESCRIPTION:Turno en ${appt.barber.shopName}`,
+      `SUMMARY:${appt.service.name} — ${appt.establishment.shopName}`,
+      `DESCRIPTION:Turno en ${appt.establishment.shopName}`,
       'END:VEVENT', 'END:VCALENDAR'
     ].join('\r\n')
     const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
@@ -89,7 +89,7 @@ function ConfirmContent({ slug }: { slug: string }) {
 
           <div className="confirm-detail">
             <Row label="Servicio" value={appt.service.name} />
-            <Row label="Local" value={appt.barber.shopName} />
+            <Row label="Local" value={appt.establishment.shopName} />
             <Row label="Fecha" value={startsAt.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })} />
             <Row label="Hora" value={startsAt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} mono />
           </div>
@@ -99,7 +99,7 @@ function ConfirmContent({ slug }: { slug: string }) {
             Agregar al calendario
           </button>
 
-          <Link href={`/${appt.barber.slug}`} className="btn btn-ghost btn-full">
+          <Link href={`/${appt.establishment.slug}`} className="btn btn-ghost btn-full">
             Reservar otro turno
           </Link>
         </div>

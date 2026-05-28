@@ -3,6 +3,20 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 type Service = { id: string; name: string; durationMins: number; price: number }
+type User = { id: string; name: string }
+
+function toDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function isDateBlocked(date: Date, blockedDates: { date: string; endDate: string | null }[]): boolean {
+  const ts = date.getTime()
+  return blockedDates.some(b => {
+    const start = new Date(b.date).getTime()
+    const end = b.endDate ? new Date(b.endDate).getTime() : start
+    return ts >= start && ts <= end
+  })
+}
 
 const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const DAYS_ES = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá']
@@ -17,10 +31,18 @@ function getCalendarDays(year: number, month: number): (Date | null)[] {
   return days
 }
 
-export function BookingFlow({ barberId, slug, services }: { barberId: string; slug: string; services: Service[] }) {
+export function BookingFlow({ establishmentId, slug, services, users, availability, blockedDates }: {
+  establishmentId: string
+  slug: string
+  services: Service[]
+  users: User[]
+  availability: { userId: string; dayOfWeek: number; isActive: boolean }[]
+  blockedDates: { date: string; endDate: string | null }[]
+}) {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(users.length === 1 ? users[0] : null)
   const [calYear, setCalYear] = useState(new Date().getFullYear())
   const [calMonth, setCalMonth] = useState(new Date().getMonth())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -30,6 +52,15 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
   const [form, setForm] = useState({ name: '', phone: '', email: '' })
   const [submitting, setSubmitting] = useState(false)
 
+  const hasMultipleUsers = users.length > 1
+
+  // Reset date/slot when user changes (availability changes)
+  useEffect(() => {
+    setSelectedDate(null)
+    setSelectedSlot(null)
+    setSlots([])
+  }, [selectedUser])
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('corturno_client')
@@ -38,17 +69,18 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
   }, [])
 
   useEffect(() => {
-    if (!selectedDate || !selectedService) return
+    if (!selectedDate || !selectedService || !selectedUser) return
     setSlotsLoading(true)
     const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
-    fetch(`/api/availability/${slug}?date=${dateStr}&serviceId=${selectedService.id}`)
+    const params = new URLSearchParams({ date: dateStr, serviceId: selectedService.id, userId: selectedUser.id })
+    fetch(`/api/availability/${slug}?${params}`)
       .then(r => r.json())
       .then(data => { setSlots(data.slots || []); setSlotsLoading(false) })
       .catch(() => setSlotsLoading(false))
-  }, [selectedDate, selectedService, slug])
+  }, [selectedDate, selectedService, selectedUser, slug])
 
   async function submitBooking() {
-    if (!selectedService || !selectedDate || !selectedSlot) return
+    if (!selectedService || !selectedDate || !selectedSlot || !selectedUser) return
     setSubmitting(true)
     try {
       localStorage.setItem('corturno_client', JSON.stringify(form))
@@ -58,13 +90,14 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        barberId,
+        establishmentId,
         serviceId: selectedService.id,
         clientName: form.name,
         clientPhone: form.phone,
         clientEmail: form.email || null,
         date: dateStr,
         time: selectedSlot,
+        userId: selectedUser.id,
       }),
     })
     if (res.ok) {
@@ -77,11 +110,25 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
   const today = new Date(); today.setHours(0, 0, 0, 0)
   const calDays = getCalendarDays(calYear, calMonth)
 
+  function isDateAvailable(date: Date): boolean {
+    if (date < today) return false
+    if (!selectedUser) return true
+    const dow = date.getDay()
+    const userDays = availability.filter(a => a.userId === selectedUser.id && a.isActive)
+    if (userDays.length === 0) return true
+    if (!userDays.some(a => a.dayOfWeek === dow)) return false
+    return !isDateBlocked(date, blockedDates)
+  }
+
+  // Determine total steps: if single user, skip professional step
+  const totalSteps = hasMultipleUsers ? 5 : 4
+  const stepPips = Array.from({ length: totalSteps }, (_, i) => i + 1)
+
   return (
     <div className="booking-flow">
       {/* Step indicators */}
       <div className="step-bar">
-        {[1, 2, 3, 4].map(s => (
+        {stepPips.map(s => (
           <div key={s} className={`step-pip${s <= step ? ' step-pip--active' : ''}`} />
         ))}
       </div>
@@ -104,14 +151,35 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
               )
             })}
           </div>
-          <button className="btn btn-primary btn-full mt-24" disabled={!selectedService} onClick={() => setStep(2)}>
+          <button className="btn btn-primary btn-full mt-24" disabled={!selectedService} onClick={() => setStep(hasMultipleUsers ? 2 : 2)}>
             Siguiente →
           </button>
         </div>
       )}
 
-      {/* Step 2 — Date */}
-      {step === 2 && (
+      {/* Step 2 — Professional (only if multiple users) */}
+      {hasMultipleUsers && step === 2 && (
+        <div>
+          <h2 className="step-h2">Elegí tu profesional</h2>
+          <div className="svc-list">
+            {users.map(u => {
+              const sel = selectedUser?.id === u.id
+              return (
+                <button key={u.id} onClick={() => setSelectedUser(u)} className={`svc-btn${sel ? ' svc-btn--sel' : ''}`}>
+                  <div className="svc-btn-name">{u.name}</div>
+                </button>
+              )
+            })}
+          </div>
+          <div className="step-actions">
+            <button className="btn btn-ghost" onClick={() => setStep(1)}>← Atrás</button>
+            <button className="btn btn-primary step-next" disabled={!selectedUser} onClick={() => setStep(3)}>Siguiente →</button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3 (or 2 if single user) — Date */}
+      {(hasMultipleUsers ? step === 3 : step === 2) && (
         <div>
           <h2 className="step-h2">Elegí la fecha</h2>
           <div className="cal-nav">
@@ -128,23 +196,24 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
               const isPast = date < today
               const isToday = date.getTime() === today.getTime()
               const isSel = selectedDate?.toDateString() === date.toDateString()
+              const available = isDateAvailable(date)
               return (
-                <button key={i} disabled={isPast} onClick={() => setSelectedDate(date)}
-                  className={`cal-day${isPast ? ' cal-day--past' : isSel ? ' cal-day--sel' : isToday ? ' cal-day--today' : ''}`}>
+                <button key={i} disabled={!available} onClick={() => setSelectedDate(date)}
+                  className={`cal-day${!available ? ' cal-day--past' : isSel ? ' cal-day--sel' : isToday ? ' cal-day--today' : ''}`}>
                   {date.getDate()}
                 </button>
               )
             })}
           </div>
           <div className="step-actions">
-            <button className="btn btn-ghost" onClick={() => setStep(1)}>← Atrás</button>
-            <button className="btn btn-primary step-next" disabled={!selectedDate} onClick={() => setStep(3)}>Siguiente →</button>
+            <button className="btn btn-ghost" onClick={() => setStep(hasMultipleUsers ? 2 : 1)}>← Atrás</button>
+            <button className="btn btn-primary step-next" disabled={!selectedDate} onClick={() => setStep(hasMultipleUsers ? 4 : 3)}>Siguiente →</button>
           </div>
         </div>
       )}
 
-      {/* Step 3 — Time */}
-      {step === 3 && (
+      {/* Step 4 (or 3 if single user) — Time */}
+      {(hasMultipleUsers ? step === 4 : step === 3) && (
         <div>
           <h2 className="step-h2 step-h2--sm">Elegí el horario</h2>
           {selectedDate && <p className="step-sub">{selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>}
@@ -162,18 +231,18 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
             </div>
           )}
           <div className="step-actions">
-            <button className="btn btn-ghost" onClick={() => setStep(2)}>← Atrás</button>
-            <button className="btn btn-primary step-next" disabled={!selectedSlot} onClick={() => setStep(4)}>Siguiente →</button>
+            <button className="btn btn-ghost" onClick={() => setStep(hasMultipleUsers ? 3 : 2)}>← Atrás</button>
+            <button className="btn btn-primary step-next" disabled={!selectedSlot} onClick={() => setStep(hasMultipleUsers ? 5 : 4)}>Siguiente →</button>
           </div>
         </div>
       )}
 
-      {/* Step 4 — Client form */}
-      {step === 4 && (
+      {/* Step 5 (or 4 if single user) — Client form */}
+      {(hasMultipleUsers ? step === 5 : step === 4) && (
         <div>
           <h2 className="step-h2 step-h2--sm">Tus datos</h2>
           <p className="step-sub">
-            {selectedService?.name} · {selectedDate?.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })} a las {selectedSlot}
+            {selectedService?.name} · {selectedUser?.name}{selectedUser ? ' · ' : ''}{selectedDate?.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })} a las {selectedSlot}
           </p>
           <div className="form-col">
             <div>
@@ -190,7 +259,7 @@ export function BookingFlow({ barberId, slug, services }: { barberId: string; sl
             </div>
           </div>
           <div className="step-actions">
-            <button className="btn btn-ghost" onClick={() => setStep(3)}>← Atrás</button>
+            <button className="btn btn-ghost" onClick={() => setStep(hasMultipleUsers ? 4 : 3)}>← Atrás</button>
             <button className="btn btn-gold step-next" disabled={!form.name || !form.phone || submitting} onClick={submitBooking}>
               {submitting ? 'Reservando…' : `Reservar ${selectedSlot}`}
             </button>
