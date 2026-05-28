@@ -2,10 +2,10 @@ import { auth } from '@/lib/auth'
 import { ThemeFromSlugProvider } from '@/lib/theme-context'
 import LandingContent from '@/components/landing/LandingContent'
 
-export default async function LandingPage() {
+export default async function ClinicaLanding() {
   const session = await auth()
   return (
-    <ThemeFromSlugProvider slug="barberia">
+    <ThemeFromSlugProvider slug="clinica">
       <LandingContent isAuthenticated={!!session} />
     </ThemeFromSlugProvider>
   )

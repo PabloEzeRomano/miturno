@@ -4,9 +4,11 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
+import { useCategory } from '@/lib/theme-context'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { appName } = useCategory()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -35,7 +37,7 @@ export default function LoginPage() {
 
         <div className="panel">
           <h1 className="auth-title">Iniciá sesión</h1>
-          <p className="auth-sub">Accedé a tu agenda de Corturno.</p>
+          <p className="auth-sub">Accedé a tu agenda de {appName}.</p>
 
           <form onSubmit={handleSubmit} className="form-col">
             <div>

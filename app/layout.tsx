@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans, Playfair_Display, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { RootThemeProvider } from './RootThemeProvider'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body className={`${dmSans.variable} ${playfair.variable} ${jetbrainsMono.variable}`}>
-        {children}
+        <RootThemeProvider>
+          {children}
+        </RootThemeProvider>
       </body>
     </html>
   )

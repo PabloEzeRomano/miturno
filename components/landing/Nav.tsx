@@ -2,8 +2,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
+import { useCategory } from '@/lib/theme-context'
 
 export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const { slug } = useCategory()
+  const homeHref = slug === 'barberia' ? '/' : `/${slug}`
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -23,7 +26,7 @@ export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
     <>
       <nav className="site-nav">
         <div className="container">
-          <Link href="/" className="nav-logo">
+          <Link href={homeHref} className="nav-logo">
             <BrandMark size={30} />
             <Wordmark size={22} />
           </Link>

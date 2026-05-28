@@ -1,8 +1,11 @@
 'use client'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
+import { useCategory } from '@/lib/theme-context'
 
 export function Footer() {
+  const { appName, slug } = useCategory()
+  const homeHref = slug === 'barberia' ? '/' : `/${slug}`
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hola@corturno.com'
   const contactWA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '#'
 
@@ -12,12 +15,12 @@ export function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <Link href="/" className="footer-logo">
+            <Link href={homeHref} className="footer-logo">
               <BrandMark size={30} />
               <Wordmark size={22} light />
             </Link>
             <p className="footer-tagline">
-              Una agenda online simple para peluquerías y barberías que prefieren cortar pelo a contestar WhatsApp.
+              Una agenda online simple para que tus clientes reserven sin llamar.
             </p>
           </div>
 
@@ -49,8 +52,8 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <span>© 2026 Corturno · un producto de gemm·apps</span>
-          <span className="footer-url">{process.env.BASE_URL}</span>
+          <span>© 2026 {appName} · un producto de gemm·apps</span>
+          <span className="footer-url">{process.env.NEXT_PUBLIC_BASE_URL}</span>
         </div>
       </div>
     </footer>

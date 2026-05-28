@@ -1,6 +1,10 @@
+'use client'
 import Link from 'next/link'
+import { useCategory } from '@/lib/theme-context'
 
 export function Hero() {
+  const { heroTitle, heroTitleEm, landingVertical, defaultServices, appName } = useCategory()
+
   return (
     <header className="hero">
       <div className="hero-gradient" />
@@ -8,14 +12,13 @@ export function Hero() {
 
       <div className="container">
         <div className="hero-grid">
-          {/* Copy */}
           <div>
             <div className="hero-eyebrow">
               <span className="hero-eyebrow-line" />
-              <span className="eyebrow eyebrow--gold">Software para peluquerías &amp; barberías</span>
+              <span className="eyebrow eyebrow--gold">Software para {landingVertical}</span>
             </div>
             <h1 className="hero-h1">
-              Tu peluquería,<br/><em>online en minutos.</em>
+              {heroTitle}<br/><em>{heroTitleEm}</em>
             </h1>
             <p className="hero-body">
               Tus clientes reservan solos desde tu link. Vos dejás de contestar <em>&ldquo;¿tenés lugar el viernes?&rdquo;</em> y recuperás horas para atender. Sin comisiones, sin contratos, sin apps que bajar.
@@ -41,13 +44,7 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Device mockup */}
           <div className="hero-mockup">
-            {/* <div className="hero-mockup-bg">
-              <span className="hero-mockup-url">turnos.gemm-apps.com/carlos</span>
-            </div> */}
-
-            {/* Float top */}
             <div className="hero-float hero-float--top">
               <span className="hero-float-icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
@@ -58,27 +55,23 @@ export function Hero() {
               </div>
             </div>
 
-            {/* Phone */}
             <div className="hero-phone">
               <div className="hero-phone-notch-bar">
                 <div className="hero-phone-notch" />
               </div>
               <div className="hero-phone-body">
                 <div className="hero-phone-shop-row">
-                  <span className="hero-phone-shop-name">Barbería <em>Ruiz</em></span>
+                  <span className="hero-phone-shop-name">{appName} <em>Demo</em></span>
                   <span className="hero-phone-location">Palermo</span>
                 </div>
                 <div className="hero-phone-section-label">Elegí tu servicio</div>
-                {[
-                  { nm: 'Corte', du: '30 min', pr: '$3.500', sel: false },
-                  { nm: 'Corte + Barba', du: '45 min', pr: '$5.000', sel: true },
-                ].map(({ nm, du, pr, sel }) => (
-                  <div key={nm} className={`hero-svc-row${sel ? ' hero-svc-row--sel' : ''}`}>
+                {defaultServices.slice(0, 2).map((s, i) => (
+                  <div key={s.name} className={`hero-svc-row${i === 1 ? ' hero-svc-row--sel' : ''}`}>
                     <div>
-                      <div className="hero-svc-name">{nm}</div>
-                      <div className="hero-svc-dur">{du}</div>
+                      <div className="hero-svc-name">{s.name}</div>
+                      <div className="hero-svc-dur">{s.durationMins} min</div>
                     </div>
-                    <div className="hero-svc-price">{pr}</div>
+                    <div className="hero-svc-price">${s.price.toLocaleString()}</div>
                   </div>
                 ))}
                 <div className="hero-phone-section-label">Sábado 16 · Mayo</div>
@@ -94,7 +87,6 @@ export function Hero() {
               </div>
             </div>
 
-            {/* Float bottom */}
             <div className="hero-float hero-float--bottom">
               <span className="hero-float-icon hero-float-icon--gold">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 9h18"/></svg>

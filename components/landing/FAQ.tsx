@@ -1,3 +1,6 @@
+'use client'
+import { useCategory } from '@/lib/theme-context'
+
 const faqs = [
   { q: '¿Mis clientes tienen que bajarse una app?', a: 'No. Abren tu link y reservan en 30 segundos desde el navegador. Funciona en cualquier celular.' },
   { q: '¿Y si me equivoco con el nombre del local?', a: 'El nombre lo cambiás cuando quieras desde tu perfil. El link público (/tu-url) queda fijo para no romper las reservas existentes.' },

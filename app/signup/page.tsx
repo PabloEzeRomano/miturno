@@ -4,6 +4,11 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
+import { useCategory } from '@/lib/theme-context'
+import { getAllCategoryDefs } from '@/lib/categories'
+import type { CategoryDef } from '@/lib/categories'
+
+const allCategories = getAllCategoryDefs()
 
 interface Service {
   name: string
@@ -11,23 +16,23 @@ interface Service {
   price: number
 }
 
-const DEFAULT_SERVICES: Service[] = [
-  { name: 'Corte', durationMins: 30, price: 3500 },
-  { name: 'Corte + Barba', durationMins: 45, price: 5000 },
-  { name: 'Puntas', durationMins: 30, price: 2500 },
-  { name: 'Full Color', durationMins: 45, price: 7500 },
-]
-
 export default function SignupPage() {
   const router = useRouter()
+  const { appName } = useCategory()
   const [step, setStep] = useState(1)
+  const [selectedCategory, setSelectedCategory] = useState<CategoryDef>(allCategories[0])
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', shopName: '' })
-  const [services, setServices] = useState<Service[]>(DEFAULT_SERVICES.map(s => ({ ...s })))
+  const [services, setServices] = useState<Service[]>(selectedCategory.defaultServices.map(s => ({ ...s })))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   function set(field: string) {
     return (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [field]: e.target.value }))
+  }
+
+  function selectCategory(cat: CategoryDef) {
+    setSelectedCategory(cat)
+    setServices(cat.defaultServices.map(s => ({ ...s })))
   }
 
   const step1Valid =
@@ -53,10 +58,10 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const res = await fetch('/api/barbers', {
+    const res = await fetch('/api/establishments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, services }),
+      body: JSON.stringify({ ...form, categoryId: selectedCategory.id, services }),
     })
     if (!res.ok) {
       const data = await res.json()
@@ -92,6 +97,21 @@ export default function SignupPage() {
                 className="form-col"
               >
                 <div>
+                  <label className="label">Rubro</label>
+                  <div className="category-picker">
+                    {allCategories.map(cat => (
+                      <button
+                        type="button"
+                        key={cat.id}
+                        onClick={() => selectCategory(cat)}
+                        className={`category-btn${selectedCategory.id === cat.id ? ' category-btn--sel' : ''}`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
                   <label className="label">Nombre completo</label>
                   <input className="input" type="text" value={form.name} onChange={set('name')} required placeholder="Tu nombre completo" autoFocus />
                 </div>
@@ -109,7 +129,7 @@ export default function SignupPage() {
                 </div>
                 <div>
                   <label className="label">Nombre del local</label>
-                  <input className="input" type="text" value={form.shopName} onChange={set('shopName')} required placeholder="Barbería Ruiz" />
+                  <input className="input" type="text" value={form.shopName} onChange={set('shopName')} required placeholder="Nombre de tu local" />
                 </div>
 
                 <button type="submit" className="btn btn-gold btn-full btn-lg" disabled={!step1Valid}>
@@ -153,7 +173,6 @@ export default function SignupPage() {
                           onChange={(e) => updateService(i, 'durationMins', Number(e.target.value))}
                           min={15}
                           max={240}
-                          step={15}
                         />
                         <span className="suf">min</span>
                       </div>

@@ -1,7 +1,10 @@
+'use client'
 import { BrandMark } from '@/components/Brand'
+import { useCategory } from '@/lib/theme-context'
 import Link from 'next/link'
 
 export function PendingActivation() {
+  const { appName } = useCategory()
   const contactWA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '#'
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hola@corturno.com'
 
@@ -19,7 +22,7 @@ export function PendingActivation() {
         </h1>
 
         <p className="pending-body">
-          Te contactamos a la brevedad para coordinar el acceso. Cualquier consulta escribinos.
+          Te contactamos a la brevedad para coordinar el acceso a {appName}. Cualquier consulta escribinos.
         </p>
 
         <div className="pending-actions">

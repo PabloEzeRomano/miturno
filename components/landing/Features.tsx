@@ -1,4 +1,9 @@
+'use client'
+import { useCategory } from '@/lib/theme-context'
+
 export function Features() {
+  const { appName } = useCategory()
+
   return (
     <section id="features" className="section section--surface section--bordered-v">
       <div className="container">
@@ -15,7 +20,6 @@ export function Features() {
         </div>
 
         <div className="bento-grid">
-          {/* Agenda online */}
           <div className="bento-cell">
             <div className="bento-icon-row">
               <div className="bento-icon">
@@ -24,7 +28,7 @@ export function Features() {
               <span className="badge badge-stat">24/7</span>
             </div>
             <h3 className="bento-h3">Agenda online</h3>
-            <p className="bento-p">Tus clientes reservan desde el celular mientras vos cortás. Slots calculados según la duración del servicio y los turnos ya tomados.</p>
+            <p className="bento-p">Tus clientes reservan desde el celular mientras vos atendés. Slots calculados según la duración del servicio y los turnos ya tomados.</p>
             <div className="bento-demo">
               <div className="cal-mini">
                 {['', 'VIE', 'SÁB', 'DOM'].map(d => <div key={d} className="cal-mini-hdr">{d}</div>)}
@@ -40,7 +44,6 @@ export function Features() {
             </div>
           </div>
 
-          {/* Gestión de turnos */}
           <div className="bento-cell">
             <div className="bento-icon-row">
               <div className="bento-icon bento-icon--gold">
@@ -57,7 +60,6 @@ export function Features() {
             </div>
           </div>
 
-          {/* Recordatorios */}
           <div className="bento-cell">
             <div className="bento-icon-row">
               <div className="bento-icon">
@@ -69,9 +71,9 @@ export function Features() {
             <p className="bento-p">Email al cliente 3 horas antes del turno. Botones para cancelar o reprogramar sin pasar por vos. Menos ausencias, menos llamadas.</p>
             <div className="bento-demo">
               <div className="reminder-card">
-                <div className="reminder-from">DE · CORTURNO &lt;recordatorios@corturno.com&gt;</div>
+                <div className="reminder-from">DE · {appName.toUpperCase()} &lt;recordatorios@{appName.toLowerCase()}.com&gt;</div>
                 <div className="reminder-subj">Te recordamos tu turno hoy</div>
-                <div className="reminder-body">Mariana, hoy a las <em>15:15</em> tenés Corte + Barba en Barbería Ruiz.</div>
+                <div className="reminder-body">Mariana, hoy a las <em>15:15</em> tenés Corte + Barba en tu local.</div>
                 <div className="reminder-links">
                   <a href="#" className="reminder-link">Reprogramar</a>
                   <a href="#" className="reminder-link">Cancelar</a>
@@ -80,7 +82,6 @@ export function Features() {
             </div>
           </div>
 
-          {/* Tu página propia */}
           <div className="bento-cell">
             <div className="bento-icon-row">
               <div className="bento-icon">
@@ -94,7 +95,7 @@ export function Features() {
                 <div className="page-url-row">
                   <span className="page-url-dot" />conexión segura · publicada
                 </div>
-                <div className="page-url-value">{process.env.BASE_URL}<em className="field-gold">carlos</em></div>
+                <div className="page-url-value">{process.env.NEXT_PUBLIC_BASE_URL}<em className="field-gold">tu-local</em></div>
                 <div className="page-url-meta">
                   <span>Tu URL</span><span>no se cambia</span>
                 </div>
