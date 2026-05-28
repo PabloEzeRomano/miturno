@@ -3,6 +3,19 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 
+declare module 'next-auth' {
+  interface Session {
+    establishmentId: string
+    establishmentSlug: string
+    categorySlug: string
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+    }
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   providers: [
@@ -13,18 +26,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const barber = await prisma.barber.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
+          include: { establishment: { include: { category: true } } },
         })
-        if (!barber) return null
-        const valid = await bcrypt.compare(credentials.password as string, barber.password)
+        if (!user) return null
+        const valid = await bcrypt.compare(credentials.password as string, user.password)
         if (!valid) return null
         return {
-          id: barber.id,
-          email: barber.email,
-          name: barber.name,
-          slug: barber.slug,
-          shopName: barber.shopName,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          establishmentId: user.establishmentId ?? '',
+          establishmentSlug: user.establishment?.slug ?? '',
+          categorySlug: user.establishment?.category?.slug ?? 'barberia',
         }
       },
     }),
@@ -32,17 +47,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        token.barberId = user.id
-        token.slug = (user as { slug: string }).slug
-        token.shopName = (user as { shopName: string }).shopName
+        token.establishmentId = (user as { establishmentId: string }).establishmentId
+        token.establishmentSlug = (user as { establishmentSlug: string }).establishmentSlug
+        token.categorySlug = (user as { categorySlug: string }).categorySlug
       }
       return token
     },
     session({ session, token }) {
-      session.user.id = token.barberId as string
-      ;(session as { barberId?: string }).barberId = token.barberId as string
-      ;(session as { slug?: string }).slug = token.slug as string
-      ;(session as { shopName?: string }).shopName = token.shopName as string
+      session.user.id = token.sub!
+      ;(session as { establishmentId?: string }).establishmentId = token.establishmentId as string
+      ;(session as { establishmentSlug?: string }).establishmentSlug = token.establishmentSlug as string
+      ;(session as { categorySlug?: string }).categorySlug = token.categorySlug as string
       return session
     },
   },
