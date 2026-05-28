@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
 
 type RecurringRule = {
-  barberId: string
+  establishmentId: string
+  userId: string
   serviceId: string
   clientName: string
   clientPhone: string
@@ -59,7 +60,7 @@ export async function generateAppointmentInstances(
 
     const existing = await prisma.appointment.findFirst({
       where: {
-        barberId: rule.barberId,
+        establishmentId: rule.establishmentId,
         OR: [
           {
             startsAt: { lt: endsAt },
@@ -77,7 +78,7 @@ export async function generateAppointmentInstances(
 
     const dayOfWeek = date.getDay()
     const avail = await prisma.availability.findFirst({
-      where: { barberId: rule.barberId, dayOfWeek, isActive: true },
+      where: { userId: rule.userId, dayOfWeek, isActive: true },
     })
     if (!avail) continue
 
@@ -92,7 +93,7 @@ export async function generateAppointmentInstances(
 
     const blocked = await prisma.blockedDate.findFirst({
       where: {
-        barberId: rule.barberId,
+        establishmentId: rule.establishmentId,
         OR: [
           { date: { gte: dateStart, lte: dateEnd }, endDate: null },
           { date: { lte: dateEnd }, endDate: { gte: dateStart } },
@@ -103,7 +104,8 @@ export async function generateAppointmentInstances(
 
     await prisma.appointment.create({
       data: {
-        barberId: rule.barberId,
+        establishmentId: rule.establishmentId,
+        userId: rule.userId,
         serviceId: rule.serviceId,
         clientName: rule.clientName,
         clientPhone: rule.clientPhone,

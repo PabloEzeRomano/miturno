@@ -7,50 +7,63 @@ import { auth } from '@/lib/auth'
 export async function GET() {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const barber = await prisma.barber.findUnique({
-    where: { id: barberId },
-    select: { id: true, name: true, phone: true, shopName: true, slug: true, email: true },
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, name: true, email: true, phone: true, role: true, establishment: { select: { shopName: true, slug: true, phone: true } } },
   })
-  if (!barber) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json(barber)
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  const { establishment, ...rest } = user
+  return NextResponse.json({ ...rest, ...establishment })
 }
 
 export async function PATCH(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const currentUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } })
   const { name, phone, shopName } = await req.json()
 
-  const updated = await prisma.barber.update({
-    where: { id: barberId },
-    data: {
-      ...(name !== undefined && { name }),
-      ...(phone !== undefined && { phone: phone || null }),
-      ...(shopName !== undefined && { shopName }),
-    },
-    select: { id: true, name: true, phone: true, shopName: true, slug: true },
-  })
+  const userData: Record<string, string> = {}
+  if (name !== undefined) userData.name = name
 
-  return NextResponse.json(updated)
+  const estData: Record<string, string> = {}
+  if (phone !== undefined) estData.phone = phone
+  if (shopName !== undefined) {
+    if (currentUser?.role !== 'Owner') {
+      return NextResponse.json({ error: 'Solo el dueño puede cambiar el nombre del local.' }, { status: 403 })
+    }
+    estData.shopName = shopName
+  }
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: session.user.id }, data: userData }),
+    ...(Object.keys(estData).length ? [prisma.establishment.update({ where: { id: establishmentId }, data: estData })] : []),
+  ])
+
+  return NextResponse.json({ success: true })
 }
 
 export async function DELETE() {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const userIds = (await prisma.user.findMany({ where: { establishmentId }, select: { id: true } })).map(u => u.id)
 
   await prisma.$transaction([
-    prisma.appointment.deleteMany({ where: { barberId } }),
-    prisma.service.deleteMany({ where: { barberId } }),
-    prisma.availability.deleteMany({ where: { barberId } }),
-    prisma.blockedDate.deleteMany({ where: { barberId } }),
-    prisma.barber.delete({ where: { id: barberId } }),
+    prisma.appointment.deleteMany({ where: { establishmentId } }),
+    prisma.service.deleteMany({ where: { establishmentId } }),
+    prisma.availability.deleteMany({ where: { userId: { in: userIds } } }),
+    prisma.blockedDate.deleteMany({ where: { establishmentId } }),
+    prisma.recurringAppointment.deleteMany({ where: { establishmentId } }),
+    prisma.user.deleteMany({ where: { establishmentId } }),
+    prisma.establishment.delete({ where: { id: establishmentId } }),
   ])
 
   return NextResponse.json({ success: true })

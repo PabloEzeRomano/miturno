@@ -12,7 +12,8 @@ function formatSlot(mins: number): string {
 }
 
 export async function getAvailableSlots(
-  barberId: string,
+  userId: string,
+  establishmentId: string,
   date: Date,
   durationMins: number,
   excludeAppointmentId?: string
@@ -20,7 +21,7 @@ export async function getAvailableSlots(
   const dayOfWeek = date.getDay()
 
   const avail = await prisma.availability.findFirst({
-    where: { barberId, dayOfWeek, isActive: true },
+    where: { userId, dayOfWeek, isActive: true },
   })
   if (!avail) return []
 
@@ -31,7 +32,7 @@ export async function getAvailableSlots(
 
   const blocked = await prisma.blockedDate.findFirst({
     where: {
-      barberId,
+      establishmentId,
       OR: [
         { date: { gte: dateStart, lte: dateEnd }, endDate: null },
         { date: { lte: dateEnd }, endDate: { gte: dateStart } },
@@ -50,7 +51,8 @@ export async function getAvailableSlots(
 
   const existing = (await prisma.appointment.findMany({
     where: {
-      barberId,
+      establishmentId,
+      userId,
       startsAt: { gte: dateStart, lte: dateEnd },
       status: { not: 'cancelled' },
     },

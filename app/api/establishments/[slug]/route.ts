@@ -4,14 +4,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
-  const barber = await prisma.barber.findUnique({
+  const establishment = await prisma.establishment.findUnique({
     where: { slug: params.slug },
     include: {
       services: { where: { isActive: true }, orderBy: { name: 'asc' } },
+      category: true,
     },
   })
-  if (!barber) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!establishment) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const { password: _, ...safe } = barber
-  return NextResponse.json(safe)
+  return NextResponse.json(establishment)
 }

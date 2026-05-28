@@ -7,12 +7,17 @@ import { auth } from '@/lib/auth'
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const currentUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } })
+  if (currentUser?.role !== 'Owner') {
+    return NextResponse.json({ error: 'Solo el dueño puede modificar servicios.' }, { status: 403 })
+  }
 
   const data = await req.json()
   const service = await prisma.service.findUnique({ where: { id: params.id } })
-  if (!service || service.barberId !== barberId) {
+  if (!service || service.establishmentId !== establishmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 

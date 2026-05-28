@@ -6,9 +6,12 @@ import { auth } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
-    const { barberId, serviceId, clientName, clientPhone, clientEmail, date, time } = await req.json()
+    const session = await auth()
+    const userId = session?.user.id
 
-    if (!barberId || !serviceId || !clientName || !clientPhone || !date || !time) {
+    const { establishmentId, serviceId, clientName, clientPhone, clientEmail, date, time, userId: bodyUserId } = await req.json()
+
+    if (!establishmentId || !serviceId || !clientName || !clientPhone || !date || !time) {
       return NextResponse.json({ error: 'Faltan campos requeridos.' }, { status: 400 })
     }
 
@@ -19,8 +22,23 @@ export async function POST(req: NextRequest) {
     const startsAt = new Date(`${date}T${time}:00`)
     const endsAt = new Date(startsAt.getTime() + service.durationMins * 60 * 1000)
 
+    // Use provided userId (admin multi-user), session user, or fallback to Owner
+    const finalUserId = bodyUserId || userId || (await prisma.user.findFirst({
+      where: { establishmentId, role: 'Owner' },
+      select: { id: true },
+    }))!.id
+
     const appt = await prisma.appointment.create({
-      data: { barberId, serviceId, clientName, clientPhone, clientEmail: clientEmail || null, startsAt, endsAt },
+      data: {
+        establishmentId,
+        userId: finalUserId,
+        serviceId,
+        clientName,
+        clientPhone,
+        clientEmail: clientEmail || null,
+        startsAt,
+        endsAt,
+      },
     })
 
     return NextResponse.json(appt, { status: 201 })
@@ -34,18 +52,31 @@ export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  })
 
   const { searchParams } = req.nextUrl
   const status = searchParams.get('status')
   const from = searchParams.get('from')
   const to = searchParams.get('to')
+  const filterUserId = searchParams.get('userId')
 
-  const where: Record<string, unknown> = { barberId }
+  const where: Record<string, unknown> = { establishmentId }
   if (status && status !== 'all') where.status = status
   if (from) where.startsAt = { ...(where.startsAt as object || {}), gte: new Date(from) }
   if (to) where.startsAt = { ...(where.startsAt as object || {}), lte: new Date(to) }
+
+  // Staff only see their own appointments
+  if (currentUser?.role !== 'Owner') {
+    where.userId = session.user.id
+  } else if (filterUserId) {
+    where.userId = filterUserId
+  }
 
   const appointments = await prisma.appointment.findMany({
     where,

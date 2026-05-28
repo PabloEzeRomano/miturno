@@ -8,11 +8,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const barberId = (session as { barberId?: string }).barberId
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
   const body = await req.json()
 
   const appt = await prisma.appointment.findUnique({ where: { id: params.id } })
-  if (!appt || appt.barberId !== barberId) {
+  if (!appt || appt.establishmentId !== establishmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -47,7 +47,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     where: { id: params.id },
     include: {
       service: true,
-      barber: { select: { shopName: true, slug: true } },
+      establishment: { select: { shopName: true, slug: true } },
       recurringAppointment: {
         select: {
           id: true,

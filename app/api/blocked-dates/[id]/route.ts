@@ -7,11 +7,11 @@ import { auth } from '@/lib/auth'
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const blocked = await prisma.blockedDate.findUnique({ where: { id: params.id } })
-  if (!blocked || blocked.barberId !== barberId) {
+  if (!blocked || blocked.establishmentId !== establishmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 

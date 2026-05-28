@@ -7,11 +7,11 @@ import { generateAppointmentInstances, deleteFutureInstances, MONTHS_TO_GENERATE
 
 export async function GET() {
   const session = await auth()
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const rules = await prisma.recurringAppointment.findMany({
-    where: { barberId },
+    where: { establishmentId },
     include: {
       service: { select: { name: true, durationMins: true, price: true } },
       appointments: {
@@ -35,10 +35,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await auth()
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { serviceId, clientName, clientPhone, clientEmail, frequency, dayOfWeek, time, startDate, endDate } = await req.json()
+  const { serviceId, clientName, clientPhone, clientEmail, frequency, dayOfWeek, time, startDate, endDate, userId: bodyUserId } = await req.json()
+  const userId = bodyUserId || session!.user.id
 
   if (!serviceId || !clientName || !clientPhone || !frequency || dayOfWeek === undefined || !time || !startDate) {
     return NextResponse.json({ error: 'Faltan campos requeridos.' }, { status: 400 })
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
   }
 
   const service = await prisma.service.findFirst({
-    where: { id: serviceId, barberId },
+    where: { id: serviceId, establishmentId },
   })
   if (!service) return NextResponse.json({ error: 'Servicio no encontrado.' }, { status: 404 })
 
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
 
   const rule = await prisma.recurringAppointment.create({
     data: {
-      barberId,
+      establishmentId,
       serviceId,
       clientName,
       clientPhone,
@@ -75,7 +76,8 @@ export async function POST(req: NextRequest) {
   const created = await generateAppointmentInstances(
     {
       recurringAppointmentId: rule.id,
-      barberId,
+      establishmentId,
+      userId,
       serviceId,
       clientName,
       clientPhone,
@@ -94,14 +96,14 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const session = await auth()
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'ID requerido.' }, { status: 400 })
 
   const rule = await prisma.recurringAppointment.findUnique({ where: { id } })
-  if (!rule || rule.barberId !== barberId) {
+  if (!rule || rule.establishmentId !== establishmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 

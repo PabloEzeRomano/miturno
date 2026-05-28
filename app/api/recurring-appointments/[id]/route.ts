@@ -7,14 +7,14 @@ import { generateAppointmentInstances, deleteFutureInstances, MONTHS_TO_GENERATE
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const rule = await prisma.recurringAppointment.findUnique({
     where: { id: params.id },
     include: { service: true },
   })
-  if (!rule || rule.barberId !== barberId) {
+  if (!rule || rule.establishmentId !== establishmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -31,12 +31,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     })
 
     if (body.status === 'active' && rule.status !== 'active') {
+      const owner = await prisma.user.findFirst({ where: { establishmentId: rule.establishmentId, role: 'Owner' } })
       const end = rule.endDate
       const untilDate = end || new Date(Date.now() + MONTHS_TO_GENERATE * 30 * 24 * 60 * 60 * 1000)
       await generateAppointmentInstances(
         {
           recurringAppointmentId: params.id,
-          barberId: rule.barberId,
+          establishmentId: rule.establishmentId,
+          userId: owner?.id || '',
           serviceId: rule.serviceId,
           clientName: rule.clientName,
           clientPhone: rule.clientPhone,
@@ -55,12 +57,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   if (body.regenerate) {
+    const owner = await prisma.user.findFirst({ where: { establishmentId: rule.establishmentId, role: 'Owner' } })
     const end = rule.endDate
     const untilDate = end || new Date(Date.now() + MONTHS_TO_GENERATE * 30 * 24 * 60 * 60 * 1000)
     const created = await generateAppointmentInstances(
       {
         recurringAppointmentId: params.id,
-        barberId: rule.barberId,
+        establishmentId: rule.establishmentId,
+        userId: owner?.id || '',
         serviceId: rule.serviceId,
         clientName: rule.clientName,
         clientPhone: rule.clientPhone,
@@ -81,11 +85,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const rule = await prisma.recurringAppointment.findUnique({ where: { id: params.id } })
-  if (!rule || rule.barberId !== barberId) {
+  if (!rule || rule.establishmentId !== establishmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -97,8 +101,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
-  const barberId = (session as { barberId?: string }).barberId
-  if (!barberId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const establishmentId = (session as { establishmentId?: string }).establishmentId
+  if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const rule = await prisma.recurringAppointment.findUnique({
     where: { id: params.id },
@@ -111,7 +115,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       },
     },
   })
-  if (!rule || rule.barberId !== barberId) {
+  if (!rule || rule.establishmentId !== establishmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
