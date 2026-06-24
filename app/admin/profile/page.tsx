@@ -13,6 +13,9 @@ export default function ProfilePage() {
   const [error, setError] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [baseUrl, setBaseUrl] = useState('')
+
+  useEffect(() => { setBaseUrl(window.location.origin) }, [])
 
   useEffect(() => {
     fetch('/api/profile').then(r => r.json()).then(data => {
@@ -79,7 +82,7 @@ export default function ProfilePage() {
           <div>
             <label className="label">Tu URL</label>
             <div className="field-mono">
-              {process.env.NEXT_PUBLIC_BASE_URL}<em className="field-gold">{slug}</em>
+              {baseUrl}/<em className="field-gold">{slug}</em>
             </div>
             <p className="field-hint">Tu URL no se puede cambiar para no romper las reservas existentes.</p>
           </div>

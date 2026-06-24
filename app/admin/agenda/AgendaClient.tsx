@@ -87,7 +87,7 @@ export function AgendaClient({ establishmentId, slug, shopName, services, availa
   useEffect(() => { load() }, [load])
 
   function copyLink() {
-    navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_BASE_URL}${slug}`)
+    navigator.clipboard.writeText(`${window.location.origin}/${slug}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

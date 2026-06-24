@@ -58,8 +58,7 @@ export async function POST(req: NextRequest) {
     select: { id: true, name: true, email: true, role: true, status: true, createdAt: true },
   })
 
-  // Send invite email
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const baseUrl = req.nextUrl.origin
   const inviteUrl = `${baseUrl}/staff-invite?token=${inviteToken}`
 
   if (process.env.RESEND_API_KEY) {

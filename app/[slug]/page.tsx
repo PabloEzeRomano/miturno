@@ -22,15 +22,26 @@ export default async function PublicBookingPage({ params }: { params: { slug: st
     orderBy: { name: 'asc' },
   })
 
-  const availability = await prisma.availability.findMany({
-    where: { userId: { in: users.map(u => u.id) } },
-    select: { userId: true, dayOfWeek: true, isActive: true },
-  })
+  const [userServiceRecords, availability, blockedDates] = await Promise.all([
+    prisma.userService.findMany({
+      where: { userId: { in: users.map(u => u.id) } },
+      select: { userId: true, serviceId: true },
+    }),
+    prisma.availability.findMany({
+      where: { userId: { in: users.map(u => u.id) } },
+      select: { userId: true, dayOfWeek: true, isActive: true },
+    }),
+    prisma.blockedDate.findMany({
+      where: { establishmentId: establishment.id },
+      select: { date: true, endDate: true },
+    }),
+  ])
 
-  const blockedDates = await prisma.blockedDate.findMany({
-    where: { establishmentId: establishment.id },
-    select: { date: true, endDate: true },
-  })
+  const userServiceMap: Record<string, string[]> = {}
+  for (const r of userServiceRecords) {
+    if (!userServiceMap[r.userId]) userServiceMap[r.userId] = []
+    userServiceMap[r.userId].push(r.serviceId)
+  }
 
   const categorySlug = establishment.category?.slug ?? 'barberia'
   const category = getCategoryDef(categorySlug)
@@ -50,6 +61,7 @@ export default async function PublicBookingPage({ params }: { params: { slug: st
           slug={params.slug}
           services={establishment.services.map(s => ({ id: s.id, name: s.name, durationMins: s.durationMins, price: s.price }))}
           users={users}
+          userServiceMap={userServiceMap}
           availability={availability}
           blockedDates={blockedDates.map(b => ({ date: b.date.toISOString(), endDate: b.endDate?.toISOString() || null }))}
         />

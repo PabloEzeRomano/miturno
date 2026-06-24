@@ -29,6 +29,7 @@ model User {
   establishment   Establishment? @relation(fields: [establishmentId], references: [id])
   availability    Availability[]
   appointments    Appointment[]
+  userServices    UserService[]
   createdAt       DateTime      @default(now())
 }
 
@@ -58,6 +59,7 @@ model Service {
   isActive             Boolean                @default(true)
   appointments         Appointment[]
   recurringAppointments RecurringAppointment[]
+  userServices         UserService[]
 }
 
 model Availability {
@@ -99,6 +101,16 @@ model Appointment {
   createdAt               DateTime              @default(now())
   recurringAppointmentId  String?
   recurringAppointment    RecurringAppointment? @relation(fields: [recurringAppointmentId], references: [id])
+}
+
+model UserService {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serviceId])
 }
 
 model RecurringAppointment {

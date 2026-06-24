@@ -12,15 +12,28 @@ export default function ServicesPage() {
   const [editData, setEditData] = useState({ name: '', durationMins: 30, price: 0 })
   const [loading, setLoading] = useState(false)
 
+  // Staff-specific state
+  const [allServices, setAllServices] = useState<Service[]>([])
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [staffSaving, setStaffSaving] = useState(false)
+  const [staffSaved, setStaffSaved] = useState(false)
+
   async function load() {
-    const [svcRes, profileRes] = await Promise.all([
-      fetch('/api/services'),
-      fetch('/api/profile'),
-    ])
-    if (svcRes.ok) setServices(await svcRes.json())
+    const profileRes = await fetch('/api/profile')
     if (profileRes.ok) {
       const data = await profileRes.json()
       setRole(data.role || '')
+      if (data.role === 'Owner') {
+        const svcRes = await fetch('/api/services')
+        if (svcRes.ok) setServices(await svcRes.json())
+      } else {
+        const svcRes = await fetch('/api/profile/services')
+        if (svcRes.ok) {
+          const { allServices: all, selectedIds: sel } = await svcRes.json()
+          setAllServices(all)
+          setSelectedIds(new Set(sel))
+        }
+      }
     }
   }
   useEffect(() => { load() }, [])
@@ -46,7 +59,66 @@ export default function ServicesPage() {
     load()
   }
 
+  async function saveStaffServices() {
+    setStaffSaving(true)
+    await fetch('/api/profile/services', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ serviceIds: Array.from(selectedIds) }),
+    })
+    setStaffSaving(false)
+    setStaffSaved(true)
+    setTimeout(() => setStaffSaved(false), 2000)
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   const isOwner = role === 'Owner'
+
+  if (role && !isOwner) {
+    return (
+      <div className="page-wrap">
+        <div className="page-header">
+          <div>
+            <span className="eyebrow eyebrow-block">ADMINISTRACIÓN</span>
+            <h1 className="page-title">Mis servicios</h1>
+          </div>
+          <button className="btn btn-primary" onClick={saveStaffServices} disabled={staffSaving}>
+            {staffSaved ? '¡Guardado!' : staffSaving ? 'Guardando…' : 'Guardar'}
+          </button>
+        </div>
+        <div className="panel">
+          <p className="field-hint" style={{ marginBottom: 16 }}>
+            Seleccioná los servicios que ofrecés. Si no seleccionás ninguno, se muestran todos los del local.
+          </p>
+          <div className="svc-list">
+            {allServices.map(svc => (
+              <label key={svc.id} className={`svc-btn${selectedIds.has(svc.id) ? ' svc-btn--sel' : ''}`} style={{ cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(svc.id)}
+                  onChange={() => toggleSelected(svc.id)}
+                  style={{ display: 'none' }}
+                />
+                <div>
+                  <div className="svc-btn-name">{svc.name}</div>
+                  <div className="svc-btn-dur">{svc.durationMins} min</div>
+                </div>
+                <div className="svc-btn-price">${svc.price.toLocaleString('es-AR')}</div>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="page-wrap">
