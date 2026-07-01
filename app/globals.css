@@ -2844,8 +2844,8 @@ button {
   .hero-grid { padding: 56px 0 72px; gap: 48px; }
   .hero-h1 { font-size: 42px; margin-bottom: 18px; }
   .hero-body { font-size: 16px; margin-bottom: 28px; }
-  .hero-ctas { width: 100%; }
-  .hero-ctas .btn { flex: 1; justify-content: center; }
+  .hero-ctas { width: 100%; flex-direction: column; }
+  .hero-ctas .btn { width: 100%; justify-content: center; white-space: nowrap; }
   .hero-eyebrow { margin-bottom: 20px; }
   .hero-stats { gap: 24px; margin-top: 32px; padding-top: 24px; }
   .hero-stat-num { font-size: 22px; }
