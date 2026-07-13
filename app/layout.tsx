@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { DM_Sans, Playfair_Display, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { RootThemeProvider } from './RootThemeProvider'
+import { TitleBlinker } from '@/components/TitleBlinker'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -26,7 +27,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Corturno — Tu peluquería, online en minutos.',
+  title: 'miturno — Tu agenda organizada en minutos',
   description: 'Una agenda simple, una página propia para que tus clientes reserven solos.',
 }
 
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <RootThemeProvider>
           {children}
         </RootThemeProvider>
+        <TitleBlinker />
       </body>
     </html>
   )

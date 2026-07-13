@@ -43,8 +43,8 @@ const categories: Record<string, Omit<CategoryDef, 'id'>> = {
   barberia: {
     slug: 'barberia',
     name: 'Barberías & Peluquerías',
-    appName: 'Corturno',
-    wordmark: { base: 'Cort', italic: 'urno' },
+    appName: 'miturno',
+    wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu peluquería, online en minutos.',
     description: 'Una agenda simple, una página propia para que tus clientes reserven solos.',
     heroTitle: 'Tu peluquería,',
@@ -81,8 +81,8 @@ const categories: Record<string, Omit<CategoryDef, 'id'>> = {
   clinica: {
     slug: 'clinica',
     name: 'Clínicas & Consultorios',
-    appName: 'MedTurno',
-    wordmark: { base: 'Med', italic: 'Turno' },
+    appName: 'miturno',
+    wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu consultorio, online en minutos.',
     description: 'Una agenda simple, una página propia para que tus pacientes reserven solos.',
     heroTitle: 'Tu consultorio,',
@@ -118,8 +118,8 @@ const categories: Record<string, Omit<CategoryDef, 'id'>> = {
   estetica: {
     slug: 'estetica',
     name: 'Centros de Estética & Nails',
-    appName: 'NailTurno',
-    wordmark: { base: 'Nail', italic: 'Turno' },
+    appName: 'miturno',
+    wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu centro de estética, online en minutos.',
     description: 'Una agenda simple, una página propia para que tus clientes reserven solos.',
     heroTitle: 'Tu centro de estética,',
@@ -156,8 +156,8 @@ const categories: Record<string, Omit<CategoryDef, 'id'>> = {
   hairimplants: {
     slug: 'hairimplants',
     name: 'Implantes Capilares',
-    appName: 'HairTurno',
-    wordmark: { base: 'Hair', italic: 'Turno' },
+    appName: 'miturno',
+    wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu clínica capilar, online en minutos.',
     description: 'Una agenda simple, una página propia para que tus pacientes reserven solos.',
     heroTitle: 'Tu clínica capilar,',

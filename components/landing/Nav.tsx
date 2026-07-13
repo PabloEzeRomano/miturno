@@ -6,7 +6,7 @@ import { useCategory } from '@/lib/theme-context'
 
 export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { slug } = useCategory()
-  const homeHref = slug === 'barberia' ? '/' : `/${slug}`
+  const homeHref = `/${slug}`
   const [open, setOpen] = useState(false)
 
   useEffect(() => {

@@ -11,7 +11,7 @@ const faqs = [
 ]
 
 export function FAQ() {
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hola@corturno.com'
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@gemm-apps.com'
 
   return (
     <section id="faq" className="section section--surface section--bordered">

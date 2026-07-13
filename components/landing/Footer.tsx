@@ -5,8 +5,8 @@ import { useCategory } from '@/lib/theme-context'
 
 export function Footer() {
   const { appName, slug } = useCategory()
-  const homeHref = slug === 'barberia' ? '/' : `/${slug}`
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hola@corturno.com'
+  const homeHref = `/${slug}`
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@gemm-apps.com'
   const contactWA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '#'
 
   return (
