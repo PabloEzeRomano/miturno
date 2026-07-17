@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { sendWhatsAppText } from '@/lib/whatsapp'
+import { sendSMS } from '@/lib/sms'
 import { safeDecrypt } from '@/lib/crypto'
 
 function formatDate(d: Date) {
@@ -15,13 +16,20 @@ export async function runReminderCron(baseUrl: string) {
   const WINDOW_MS = 6 * 60 * 1000 // ±6 min; run cron every ≤10 min
 
   const allSettings = await prisma.reminderSettings.findMany()
+  console.log(`[cron] ${allSettings.length} establishment(s) con settings. now=${now.toISOString()}`)
   let processed = 0
 
   for (const s of allSettings) {
     const decryptedKey = safeDecrypt(s.waApiKey)
-    const creds = decryptedKey && s.waPhoneNumberId
+    const waCreds = decryptedKey && s.waPhoneNumberId
       ? { waApiKey: decryptedKey, waPhoneNumberId: s.waPhoneNumberId }
       : null
+    console.log(`[cron] est=${s.establishmentId} cancelReschedule=${s.cancelRescheduleEnabled} reminder=${s.reminderEnabled} review=${s.reviewEnabled} channel=${waCreds ? 'whatsapp' : 'sms'}`)
+
+    async function send(phone: string, message: string): Promise<boolean> {
+      if (waCreds) return sendWhatsAppText(phone, message, waCreds)
+      return sendSMS(phone, message)
+    }
 
     // 1. Cancel/reschedule reminder (X hours before)
     if (s.cancelRescheduleEnabled) {
@@ -39,6 +47,7 @@ export async function runReminderCron(baseUrl: string) {
         include: { service: true, establishment: true, user: { select: { name: true } } },
       })
 
+      console.log(`[cron] cancelReschedule: ${appts.length} turno(s) en ventana`)
       for (const appt of appts) {
         const link = `${baseUrl}/turno/${appt.id}`
         const msg =
@@ -48,9 +57,12 @@ export async function runReminderCron(baseUrl: string) {
           `Servicio: ${appt.service.name} con ${appt.user.name}.\n\n` +
           `Para cancelar o reprogramar:\n${link}`
 
-        await sendWhatsAppText(appt.clientPhone, msg, creds)
-        await prisma.appointment.update({ where: { id: appt.id }, data: { cancelRescheduleSent: true } })
-        processed++
+        const ok = await send(appt.clientPhone, msg)
+        console.log(`[cron] cancelReschedule sent=${ok} to=${appt.clientPhone}`)
+        if (ok) {
+          await prisma.appointment.update({ where: { id: appt.id }, data: { cancelRescheduleSent: true } })
+          processed++
+        }
       }
     }
 
@@ -77,9 +89,11 @@ export async function runReminderCron(baseUrl: string) {
           `es en ${label}.\n` +
           `${formatDate(appt.startsAt)} a las ${formatTime(appt.startsAt)} — ${appt.service.name}.`
 
-        await sendWhatsAppText(appt.clientPhone, msg, creds)
-        await prisma.appointment.update({ where: { id: appt.id }, data: { reminderSent: true } })
-        processed++
+        const ok = await send(appt.clientPhone, msg)
+        if (ok) {
+          await prisma.appointment.update({ where: { id: appt.id }, data: { reminderSent: true } })
+          processed++
+        }
       }
     }
 
@@ -104,9 +118,11 @@ export async function runReminderCron(baseUrl: string) {
           `¡Gracias por visitarnos, ${appt.clientName}! 💈\n` +
           `Nos alegraría que nos dejes una reseña:\n${s.googleReviewUrl}`
 
-        await sendWhatsAppText(appt.clientPhone, msg, creds)
-        await prisma.appointment.update({ where: { id: appt.id }, data: { reviewSent: true } })
-        processed++
+        const ok = await send(appt.clientPhone, msg)
+        if (ok) {
+          await prisma.appointment.update({ where: { id: appt.id }, data: { reviewSent: true } })
+          processed++
+        }
       }
     }
   }

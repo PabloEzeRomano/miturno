@@ -17,8 +17,8 @@ export async function sendWhatsAppText(
     return true
   }
 
-  // Normalize phone: remove spaces/dashes, ensure country code
-  const normalized = phone.replace(/[\s\-()]/g, '')
+  // Meta expects E.164 without leading +, digits only
+  const normalized = phone.replace(/[\s\-()+ ]/g, '')
 
   try {
     const res = await fetch(
