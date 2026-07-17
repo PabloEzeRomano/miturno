@@ -1,24 +1,16 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { sendAppointmentReminder } from '@/lib/reminders'
+import { NextRequest, NextResponse } from 'next/server'
+import { runReminderCron } from '@/lib/reminders'
 
-export async function GET() {
-  const now = new Date()
-  const in3h = new Date(now.getTime() + 3 * 60 * 60 * 1000)
-
-  const pending = await prisma.appointment.findMany({
-    where: {
-      startsAt: { gte: now, lte: in3h },
-      reminderSent: false,
-      status: 'confirmed',
-    },
-  })
-
-  for (const appt of pending) {
-    await sendAppointmentReminder(appt.id)
+export async function GET(req: NextRequest) {
+  // Protect with a secret so only Vercel cron can call this
+  const secret = req.headers.get('x-cron-secret')
+  if (process.env.CRON_SECRET && secret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  return NextResponse.json({ processed: pending.length })
+  const baseUrl = req.nextUrl.origin
+  const processed = await runReminderCron(baseUrl)
+  return NextResponse.json({ processed })
 }

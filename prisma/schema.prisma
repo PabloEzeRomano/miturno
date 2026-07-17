@@ -26,6 +26,7 @@ model User {
   status          String        @default("active")
   inviteToken     String?       @unique
   establishmentId String?
+  commissionPct   Float         @default(0)
   establishment   Establishment? @relation(fields: [establishmentId], references: [id])
   availability    Availability[]
   appointments    Appointment[]
@@ -34,19 +35,20 @@ model User {
 }
 
 model Establishment {
-  id            String         @id @default(cuid())
-  shopName      String
-  slug          String         @unique
-  phone         String
-  categoryId    String?
-  category      Category?      @relation(fields: [categoryId], references: [id])
-  isActive      Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  users         User[]
-  services      Service[]
-  appointments  Appointment[]
-  blockedDates  BlockedDate[]
+  id              String            @id @default(cuid())
+  shopName        String
+  slug            String            @unique
+  phone           String
+  categoryId      String?
+  category        Category?         @relation(fields: [categoryId], references: [id])
+  isActive        Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  users           User[]
+  services        Service[]
+  appointments    Appointment[]
+  blockedDates    BlockedDate[]
   recurringAppointments RecurringAppointment[]
+  reminderSettings ReminderSettings?
 }
 
 model Service {
@@ -98,6 +100,8 @@ model Appointment {
   endsAt                  DateTime
   status                  String                @default("confirmed")
   reminderSent            Boolean               @default(false)
+  cancelRescheduleSent    Boolean               @default(false)
+  reviewSent              Boolean               @default(false)
   createdAt               DateTime              @default(now())
   recurringAppointmentId  String?
   recurringAppointment    RecurringAppointment? @relation(fields: [recurringAppointmentId], references: [id])
@@ -111,6 +115,21 @@ model UserService {
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, serviceId])
+}
+
+model ReminderSettings {
+  id                          String        @id @default(cuid())
+  establishmentId             String        @unique
+  establishment               Establishment @relation(fields: [establishmentId], references: [id])
+  waApiKey                    String?
+  waPhoneNumberId             String?
+  googleReviewUrl             String?
+  cancelRescheduleEnabled     Boolean       @default(false)
+  cancelRescheduleHoursBefore Float         @default(5)
+  reminderEnabled             Boolean       @default(false)
+  reminderHoursBefore         Float         @default(1)
+  reviewEnabled               Boolean       @default(false)
+  reviewHoursAfter            Float         @default(1.5)
 }
 
 model RecurringAppointment {
