@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { encrypt, safeDecrypt } from '@/lib/crypto'
 
 async function getOwnerEstablishment() {
   const session = await auth()
@@ -15,7 +16,7 @@ async function getOwnerEstablishment() {
   return user.establishmentId
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const estId = await getOwnerEstablishment()
   if (!estId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -23,7 +24,13 @@ export async function GET(req: NextRequest) {
     where: { establishmentId: estId },
   })
 
-  return NextResponse.json(settings ?? { establishmentId: estId })
+  if (!settings) return NextResponse.json({ establishmentId: estId })
+
+  // Decrypt sensitive field before sending to client
+  return NextResponse.json({
+    ...settings,
+    waApiKey: safeDecrypt(settings.waApiKey),
+  })
 }
 
 export async function PATCH(req: NextRequest) {
@@ -44,11 +51,19 @@ export async function PATCH(req: NextRequest) {
     if (field in body) data[field] = body[field]
   }
 
+  // Encrypt waApiKey before storing
+  if (typeof data.waApiKey === 'string' && data.waApiKey) {
+    data.waApiKey = encrypt(data.waApiKey)
+  }
+
   const settings = await prisma.reminderSettings.upsert({
     where: { establishmentId: estId },
     create: { establishmentId: estId, ...data },
     update: data,
   })
 
-  return NextResponse.json(settings)
+  return NextResponse.json({
+    ...settings,
+    waApiKey: safeDecrypt(settings.waApiKey),
+  })
 }

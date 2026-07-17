@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { sendWhatsAppText } from '@/lib/whatsapp'
+import { safeDecrypt } from '@/lib/crypto'
 
 function formatDate(d: Date) {
   return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -17,8 +18,9 @@ export async function runReminderCron(baseUrl: string) {
   let processed = 0
 
   for (const s of allSettings) {
-    const creds = s.waApiKey && s.waPhoneNumberId
-      ? { waApiKey: s.waApiKey, waPhoneNumberId: s.waPhoneNumberId }
+    const decryptedKey = safeDecrypt(s.waApiKey)
+    const creds = decryptedKey && s.waPhoneNumberId
+      ? { waApiKey: decryptedKey, waPhoneNumberId: s.waPhoneNumberId }
       : null
 
     // 1. Cancel/reschedule reminder (X hours before)
