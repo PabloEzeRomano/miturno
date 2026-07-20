@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation'
+import { getCategoryDef } from '@/lib/categories'
+import { ThemeProvider } from '@/lib/theme-context'
 import { TurnoClient } from './TurnoClient'
 
 interface Props {
@@ -13,7 +15,10 @@ async function getAppt(id: string) {
       include: {
         service: { select: { id: true, name: true, durationMins: true, price: true } },
         user: { select: { id: true, name: true } },
-        establishment: { select: { id: true, shopName: true, slug: true } },
+        establishment: {
+          select: { id: true, shopName: true, slug: true },
+          include: { category: { select: { slug: true } } },
+        },
       },
     })
     return appt
@@ -31,19 +36,24 @@ export default async function TurnoPage({ params }: Props) {
     .map((w) => w[0]?.toUpperCase() ?? '')
     .join('.')
 
+  const categorySlug = appt.establishment.category?.slug ?? 'barberia'
+  const category = getCategoryDef(categorySlug)
+
   return (
-    <TurnoClient
-      appt={{
-        id: appt.id,
-        status: appt.status,
-        startsAt: appt.startsAt.toISOString(),
-        endsAt: appt.endsAt.toISOString(),
-        clientInitials: initials,
-        service: appt.service,
-        pro: appt.user,
-        establishment: appt.establishment,
-      }}
-    />
+    <ThemeProvider category={category}>
+      <TurnoClient
+        appt={{
+          id: appt.id,
+          status: appt.status,
+          startsAt: appt.startsAt.toISOString(),
+          endsAt: appt.endsAt.toISOString(),
+          clientInitials: initials,
+          service: appt.service,
+          pro: appt.user,
+          establishment: { id: appt.establishment.id, shopName: appt.establishment.shopName, slug: appt.establishment.slug },
+        }}
+      />
+    </ThemeProvider>
   )
 }
 
