@@ -26,10 +26,8 @@ export async function runReminderCron(baseUrl: string) {
       : null
     console.log(`[cron] est=${s.establishmentId} cancelReschedule=${s.cancelRescheduleEnabled} reminder=${s.reminderEnabled} review=${s.reviewEnabled} channel=${waCreds ? 'whatsapp' : 'sms'}`)
 
-    async function send(phone: string, message: string): Promise<boolean> {
-      if (waCreds) return sendWhatsAppText(phone, message, waCreds)
-      return sendSMS(phone, message)
-    }
+    const send = (phone: string, message: string): Promise<boolean> =>
+      waCreds ? sendWhatsAppText(phone, message, waCreds) : sendSMS(phone, message)
 
     // 1. Cancel/reschedule reminder (X hours before)
     if (s.cancelRescheduleEnabled) {
