@@ -554,7 +554,12 @@ button {
   color: var(--c-muted);
 }
 .btn-danger {
+  background: var(--c-danger-bg);
   color: var(--c-danger);
+  border: 1px solid var(--c-danger-bg);
+}
+.btn-danger:hover {
+  filter: brightness(0.94);
 }
 
 /* ---- Services add-form grid ---- */
@@ -3033,117 +3038,8 @@ button {
 
 /* ======================================================
    TURNO PÚBLICO — /turno/[id]
+   Uses .booking-page / .booking-header / .booking-flow / .panel
    ====================================================== */
-.turno-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px 16px;
-  background: var(--c-surface);
-}
-
-.turno-card {
-  background: var(--c-base);
-  border: 1px solid var(--c-border);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 480px;
-  padding: 32px;
-}
-
-.turno-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.turno-shop {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--c-heading);
-}
-
-.turno-badge {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 99px;
-  letter-spacing: 0.02em;
-}
-
-.turno-badge--confirmed { background: #d1fae5; color: #065f46; }
-.turno-badge--cancelled { background: #fee2e2; color: #991b1b; }
-@media (prefers-color-scheme: dark) {
-  .turno-badge--confirmed { background: #064e3b; color: #6ee7b7; }
-  .turno-badge--cancelled { background: #7f1d1d; color: #fca5a5; }
-}
-
-.turno-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-.turno-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--c-border);
-}
-
-.turno-row:last-child { border-bottom: none; padding-bottom: 0; }
-
-.turno-label { color: var(--c-muted); }
-.turno-value { font-weight: 500; color: var(--c-heading); text-align: right; }
-
-.turno-verify {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.turno-verify-hint {
-  font-size: 14px;
-  color: var(--c-muted);
-  margin: 0;
-}
-
-.turno-error {
-  font-size: 13px;
-  color: var(--c-danger, #dc2626);
-  margin: 0;
-}
-
-.turno-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.turno-actions .btn { flex: 1; justify-content: center; }
-
-.btn-danger {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fca5a5;
-}
-.btn-danger:hover { background: #fecaca; }
-@media (prefers-color-scheme: dark) {
-  .btn-danger { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
-  .btn-danger:hover { background: #991b1b; }
-}
-
-.turno-reschedule { display: flex; flex-direction: column; gap: 16px; }
-.turno-section-title { font-size: 15px; font-weight: 600; margin: 0; }
-.turno-hint { font-size: 13px; color: var(--c-muted); margin: 0; }
-
-.turno-done { text-align: center; padding: 16px 0; }
-.turno-done-msg { font-size: 15px; font-weight: 500; color: var(--c-heading); }
 
 /* ======================================================
    RECORDATORIOS — /admin/recordatorios
@@ -3177,16 +3073,14 @@ button {
   gap: 4px;
   padding: 16px;
   background: var(--c-surface);
-  border-radius: 10px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-3);
 }
 
 .caja-total-label { font-size: 12px; color: var(--c-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-.caja-total-value { font-size: 22px; font-weight: 700; color: var(--c-heading); }
-.caja-total-value--comm { color: var(--c-danger, #dc2626); }
-.caja-total-value--net { color: #059669; }
-@media (prefers-color-scheme: dark) {
-  .caja-total-value--net { color: #34d399; }
-}
+.caja-total-value { font-size: 22px; font-weight: 700; color: var(--c-ink); font-family: var(--f-display); letter-spacing: -0.01em; }
+.caja-total-value--comm { color: var(--c-danger); }
+.caja-total-value--net { color: var(--c-success); }
 
 .caja-staff-header {
   display: flex;
@@ -3196,7 +3090,7 @@ button {
   padding: 4px 0;
 }
 
-.caja-staff-name { font-size: 16px; font-weight: 600; color: var(--c-heading); }
+.caja-staff-name { font-size: 16px; font-weight: 600; color: var(--c-ink); }
 
 .caja-staff-meta {
   display: flex;
@@ -3206,11 +3100,11 @@ button {
   color: var(--c-muted);
 }
 
-.caja-staff-subtotal { font-weight: 600; color: var(--c-heading); font-size: 15px; }
+.caja-staff-subtotal { font-weight: 600; color: var(--c-ink); font-size: 15px; }
 
 .caja-staff-footer {
   margin-top: 12px;
-  border-top: 1px solid var(--c-border);
+  border-top: 1px solid var(--c-line);
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -3227,8 +3121,8 @@ button {
 .caja-staff-footer-row--net {
   font-weight: 600;
   font-size: 14px;
-  color: var(--c-heading);
-  border-top: 1px solid var(--c-border);
+  color: var(--c-ink);
+  border-top: 1px solid var(--c-line);
   padding-top: 6px;
   margin-top: 2px;
 }

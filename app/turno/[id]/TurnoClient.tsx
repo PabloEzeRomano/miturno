@@ -1,6 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { BrandMark, Wordmark } from '@/components/Brand'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import { FormField } from '@/components/ui/FormField'
 
 interface ApptInfo {
   id: string
@@ -25,26 +29,31 @@ function formatTime(d: string) {
 
 type View = 'verify' | 'detail' | 'reschedule' | 'done'
 
+const DETAIL_ROWS: Array<[string, (a: ApptInfo) => string]> = [
+  ['Servicio', (a) => a.service.name],
+  ['Profesional', (a) => a.pro.name],
+  ['Fecha', (a) => formatDate(a.startsAt)],
+  ['Hora', (a) => formatTime(a.startsAt)],
+  ['Precio', (a) => `$${a.service.price.toLocaleString('es-AR')}`],
+]
+
 export function TurnoClient({ appt }: { appt: ApptInfo }) {
   const [view, setView] = useState<View>(appt.status === 'cancelled' ? 'detail' : 'verify')
   const [phone, setPhone] = useState('')
   const [verifyError, setVerifyError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  // Reschedule state
   const [rescheduleDate, setRescheduleDate] = useState('')
   const [slots, setSlots] = useState<string[]>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState('')
   const [doneMsg, setDoneMsg] = useState('')
-
   const todayStr = new Date().toISOString().split('T')[0]
+  const cancelled = appt.status === 'cancelled'
 
   async function handleVerify() {
     if (!phone.trim()) return
     setLoading(true)
     setVerifyError('')
-    // We verify by attempting a no-op patch with the phone. If 403 → wrong phone.
     const res = await fetch(`/api/turno/${appt.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -52,20 +61,16 @@ export function TurnoClient({ appt }: { appt: ApptInfo }) {
     })
     setLoading(false)
     if (res.status === 403) {
-      setVerifyError('Teléfono incorrecto. Ingresá el número con el que hiciste la reserva.')
+      setVerifyError('Número incorrecto. Usá el que ingresaste al reservar.')
       return
     }
-    // 400 on _verify action is expected — means phone matched
-    if (res.status === 400 || res.ok) {
-      setView('detail')
-      return
-    }
+    if (res.status === 400 || res.ok) { setView('detail'); return }
     const body = await res.json()
     setVerifyError(body.error ?? 'Error al verificar.')
   }
 
   async function handleCancel() {
-    if (!confirm('¿Confirmás que querés cancelar el turno?')) return
+    if (!confirm('¿Confirmás que querés cancelar?')) return
     setLoading(true)
     const res = await fetch(`/api/turno/${appt.id}`, {
       method: 'PATCH',
@@ -73,10 +78,7 @@ export function TurnoClient({ appt }: { appt: ApptInfo }) {
       body: JSON.stringify({ phone, action: 'cancel' }),
     })
     setLoading(false)
-    if (res.ok) {
-      setDoneMsg('Tu turno fue cancelado correctamente.')
-      setView('done')
-    }
+    if (res.ok) { setDoneMsg('Tu turno fue cancelado.'); setView('done') }
   }
 
   async function loadSlots(date: string) {
@@ -87,10 +89,7 @@ export function TurnoClient({ appt }: { appt: ApptInfo }) {
       `/api/availability/${appt.establishment.slug}?date=${date}&serviceId=${appt.service.id}&userId=${appt.pro.id}&excludeId=${appt.id}`
     )
     setSlotsLoading(false)
-    if (res.ok) {
-      const data = await res.json()
-      setSlots(data.slots ?? [])
-    }
+    if (res.ok) { const data = await res.json(); setSlots(data.slots ?? []) }
   }
 
   async function handleReschedule() {
@@ -103,92 +102,102 @@ export function TurnoClient({ appt }: { appt: ApptInfo }) {
     })
     setLoading(false)
     if (res.ok) {
-      setDoneMsg(`Tu turno fue reprogramado para el ${formatDate(rescheduleDate + 'T' + selectedSlot)} a las ${selectedSlot}.`)
+      setDoneMsg(`Turno reprogramado para el ${formatDate(rescheduleDate + 'T' + selectedSlot)} a las ${selectedSlot}.`)
       setView('done')
     }
   }
 
-  const cancelled = appt.status === 'cancelled'
-
   return (
-    <div className="turno-page">
-      <div className="turno-card">
-        <div className="turno-header">
-          <div className="turno-shop">{appt.establishment.shopName}</div>
-          <div className={`turno-badge turno-badge--${cancelled ? 'cancelled' : 'confirmed'}`}>
-            {cancelled ? 'Cancelado' : 'Confirmado'}
+    <div className="booking-page">
+      <header className="booking-header">
+        <div className="booking-header-inner">
+          <span className="auth-logo" style={{ cursor: 'default' }}>
+            <BrandMark size={28} />
+            <Wordmark size={18} />
+          </span>
+        </div>
+      </header>
+
+      <div className="booking-flow">
+        {/* Shop + status */}
+        <div style={{ marginBottom: 24 }}>
+          <span className="booking-header-eyebrow">Tu turno</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 4 }}>
+            <h1 className="booking-shop-name">{appt.establishment.shopName}</h1>
+            <Badge variant={cancelled ? 'cancelled' : 'confirmed'}>
+              {cancelled ? 'Cancelado' : 'Confirmado'}
+            </Badge>
           </div>
         </div>
 
-        <div className="turno-info">
-          <div className="turno-row">
-            <span className="turno-label">Servicio</span>
-            <span className="turno-value">{appt.service.name}</span>
-          </div>
-          <div className="turno-row">
-            <span className="turno-label">Profesional</span>
-            <span className="turno-value">{appt.pro.name}</span>
-          </div>
-          <div className="turno-row">
-            <span className="turno-label">Fecha</span>
-            <span className="turno-value">{formatDate(appt.startsAt)}</span>
-          </div>
-          <div className="turno-row">
-            <span className="turno-label">Hora</span>
-            <span className="turno-value">{formatTime(appt.startsAt)}</span>
-          </div>
-          <div className="turno-row">
-            <span className="turno-label">Precio</span>
-            <span className="turno-value">${appt.service.price.toLocaleString('es-AR')}</span>
+        {/* Appointment details */}
+        <div className="panel panel--mb">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {DETAIL_ROWS.map(([label, getValue]) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16 }}>
+                <span className="label" style={{ marginBottom: 0, flexShrink: 0 }}>{label}</span>
+                <span className="row-value">{getValue(appt)}</span>
+              </div>
+            ))}
           </div>
         </div>
 
+        {/* Verify identity */}
         {view === 'verify' && (
-          <div className="turno-verify">
-            <p className="turno-verify-hint">
-              Ingresá tu número de teléfono para gestionar el turno.
-            </p>
-            <input
-              className="form-input"
-              type="tel"
-              placeholder="+54 9 11 1234-5678"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-            />
-            {verifyError && <p className="turno-error">{verifyError}</p>}
-            <button className="btn btn-primary" onClick={handleVerify} disabled={loading}>
-              {loading ? 'Verificando…' : 'Confirmar identidad'}
-            </button>
+          <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div>
+              <h2 className="step-h2" style={{ marginBottom: 6 }}>Verificá tu identidad</h2>
+              <p className="step-sub" style={{ margin: 0 }}>Ingresá el número con el que hiciste la reserva.</p>
+            </div>
+            <FormField
+              label="Teléfono"
+              hint="Solo números, sin espacios ni guiones. Ej: 1122550533"
+              error={verifyError}
+            >
+              <input
+                className="input"
+                type="tel"
+                inputMode="numeric"
+                placeholder="1122550533"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
+              />
+            </FormField>
+            <Button onClick={handleVerify} disabled={loading} full>
+              {loading ? 'Verificando…' : 'Verificar'}
+            </Button>
           </div>
         )}
 
+        {/* Actions */}
         {view === 'detail' && !cancelled && (
-          <div className="turno-actions">
-            <button className="btn btn-primary" onClick={() => setView('reschedule')}>
+          <div className="step-actions">
+            <Button onClick={() => setView('reschedule')} className="step-next">
               Reprogramar
-            </button>
-            <button className="btn btn-danger" onClick={handleCancel} disabled={loading}>
+            </Button>
+            <Button variant="danger" onClick={handleCancel} disabled={loading} className="step-next">
               {loading ? 'Cancelando…' : 'Cancelar turno'}
-            </button>
+            </Button>
           </div>
         )}
 
+        {/* Reschedule */}
         {view === 'reschedule' && (
-          <div className="turno-reschedule">
-            <h3 className="turno-section-title">Elegí una nueva fecha</h3>
-            <input
-              className="form-input"
-              type="date"
-              min={todayStr}
-              value={rescheduleDate}
-              onChange={(e) => {
-                setRescheduleDate(e.target.value)
-                if (e.target.value) loadSlots(e.target.value)
-              }}
-            />
+          <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <h2 className="step-h2" style={{ marginBottom: 0 }}>Nueva fecha</h2>
 
-            {slotsLoading && <p className="turno-hint">Cargando horarios…</p>}
+            <FormField label="Fecha">
+              <input
+                className="input"
+                type="date"
+                min={todayStr}
+                value={rescheduleDate}
+                onChange={(e) => { setRescheduleDate(e.target.value); if (e.target.value) loadSlots(e.target.value) }}
+              />
+            </FormField>
+
+            {slotsLoading && <p className="field-hint">Cargando horarios…</p>}
 
             {!slotsLoading && slots.length > 0 && (
               <>
@@ -196,39 +205,45 @@ export function TurnoClient({ appt }: { appt: ApptInfo }) {
                   {slots.map((slot) => (
                     <button
                       key={slot}
-                      className={`slot-btn${selectedSlot === slot ? ' slot-btn--selected' : ''}`}
+                      className={`slot-btn${selectedSlot === slot ? ' slot-btn--sel' : ''}`}
                       onClick={() => setSelectedSlot(slot)}
                     >
                       {slot}
                     </button>
                   ))}
                 </div>
-                <div className="turno-actions">
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleReschedule}
-                    disabled={!selectedSlot || loading}
-                  >
-                    {loading ? 'Guardando…' : 'Confirmar reprogramación'}
-                  </button>
-                  <button className="btn btn-ghost" onClick={() => setView('detail')}>
-                    Cancelar
-                  </button>
+                <div className="step-actions">
+                  <Button onClick={handleReschedule} disabled={!selectedSlot || loading} className="step-next">
+                    {loading ? 'Guardando…' : 'Confirmar'}
+                  </Button>
+                  <Button variant="ghost" onClick={() => setView('detail')}>
+                    Volver
+                  </Button>
                 </div>
               </>
             )}
 
             {!slotsLoading && rescheduleDate && slots.length === 0 && (
-              <p className="turno-hint">No hay horarios disponibles para esa fecha. Probá con otro día.</p>
+              <p className="field-hint">Sin horarios para esa fecha. Probá con otro día.</p>
             )}
           </div>
         )}
 
+        {/* Done */}
         {view === 'done' && (
-          <div className="turno-done">
-            <p className="turno-done-msg">✓ {doneMsg}</p>
+          <div className="panel" style={{ textAlign: 'center', padding: '36px 28px' }}>
+            <div className="confirm-icon" style={{ margin: '0 auto 20px' }}>
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path d="M20 6L9 17l-5-5" stroke="var(--c-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <p style={{ fontSize: 15, fontWeight: 500, margin: 0 }}>{doneMsg}</p>
           </div>
         )}
+
+        <p className="eyebrow" style={{ textAlign: 'center', marginTop: 32, opacity: 0.5, fontSize: 11 }}>
+          Enviado usando miturno
+        </p>
       </div>
     </div>
   )
