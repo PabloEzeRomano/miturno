@@ -16,8 +16,12 @@ async function getAppt(id: string) {
         service: { select: { id: true, name: true, durationMins: true, price: true } },
         user: { select: { id: true, name: true } },
         establishment: {
-          select: { id: true, shopName: true, slug: true },
-          include: { category: { select: { slug: true } } },
+          select: {
+            id: true,
+            shopName: true,
+            slug: true,
+            category: { select: { slug: true } },
+          },
         },
       },
     })
