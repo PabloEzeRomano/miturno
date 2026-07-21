@@ -73,8 +73,23 @@ export default function SignupPage() {
     router.push('/admin/agenda')
   }
 
+  const themeVars = {
+    '--c-gold': selectedCategory.theme.accent,
+    '--c-gold-soft': selectedCategory.theme.accentSoft,
+    '--c-gold-deep': selectedCategory.theme.accentDeep,
+    '--c-bg': selectedCategory.theme.bg,
+    '--c-bg-2': selectedCategory.theme.bg2,
+    '--c-surface': selectedCategory.theme.surface,
+    '--c-line': selectedCategory.theme.line,
+    '--c-ink': selectedCategory.theme.ink,
+    '--c-ink-80': selectedCategory.theme.ink80,
+    '--c-ink-60': selectedCategory.theme.ink60,
+    '--c-muted': selectedCategory.theme.muted,
+    '--c-muted-30': selectedCategory.theme.muted30,
+  } as React.CSSProperties
+
   return (
-    <div className="auth-page">
+    <div className="auth-page" style={themeVars}>
       <div className="auth-box--wide">
         <Link href="/" className="auth-logo">
           <BrandMark size={28} />
@@ -97,17 +112,19 @@ export default function SignupPage() {
                 className="form-col"
               >
                 <div>
-                  <label className="label">Rubro</label>
-                  <div className="category-picker">
+                  <label className="label">Color de tu marca</label>
+                  <div className="color-picker">
                     {allCategories.map(cat => (
                       <button
                         type="button"
                         key={cat.id}
                         onClick={() => selectCategory(cat)}
-                        className={`category-btn${selectedCategory.id === cat.id ? ' category-btn--sel' : ''}`}
-                      >
-                        {cat.name}
-                      </button>
+                        className={`color-swatch${selectedCategory.id === cat.id ? ' color-swatch--sel' : ''}`}
+                        title={cat.name}
+                        aria-label={cat.name}
+                        aria-pressed={selectedCategory.id === cat.id}
+                        style={{ background: cat.theme.accent, '--swatch-color': cat.theme.accent } as React.CSSProperties}
+                      />
                     ))}
                   </div>
                 </div>
