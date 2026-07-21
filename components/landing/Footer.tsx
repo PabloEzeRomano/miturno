@@ -52,7 +52,7 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <span>© 2026 {appName} · un producto de gemm·apps</span>
+          <span>© 2026 {appName} · <a href="https://gemm-apps.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>hecho con ♥ por gemm-apps</a></span>
           <span className="footer-url">{process.env.NEXT_PUBLIC_BASE_URL}</span>
         </div>
       </div>

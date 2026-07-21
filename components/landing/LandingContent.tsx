@@ -13,12 +13,12 @@ export default function LandingContent({ isAuthenticated }: { isAuthenticated: b
       <Nav isAuthenticated={isAuthenticated} />
       <main>
         <Hero />
-        <div className="landing-strip">
+        {/*<div className="landing-strip">
           <div className="container">
             <span className="strip-label">Pensado para tu negocio</span>
             <span className="strip-quote"><em>«</em> Tomá turnos mientras atendés. <em>»</em></span>
           </div>
-        </div>
+        </div>*/}
         <HowItWorks />
         <Features />
         <Pricing />

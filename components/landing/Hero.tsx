@@ -14,8 +14,8 @@ export function Hero() {
         <div className="hero-grid">
           <div>
             <div className="hero-eyebrow">
-              <span className="hero-eyebrow-line" />
-              <span className="eyebrow eyebrow--gold">Software para {landingVertical}</span>
+              {/*<span className="hero-eyebrow-line" />*/}
+              {/*<span className="eyebrow eyebrow--gold">Software para {landingVertical}</span>*/}
             </div>
             <h1 className="hero-h1">
               {heroTitle}<br/><em>{heroTitleEm}</em>
@@ -30,7 +30,7 @@ export function Hero() {
               </Link>
               <a href="#how" className="btn btn-outline-light btn-lg">Ver cómo funciona</a>
             </div>
-            <div className="hero-stats">
+            {/*<div className="hero-stats">
               {[
                 { num: '2 min', lbl: 'TODO CONFIGURADO' },
                 { num: '0%', lbl: 'COMISIÓN' },
@@ -41,7 +41,7 @@ export function Hero() {
                   <span className="hero-stat-lbl">{lbl}</span>
                 </div>
               ))}
-            </div>
+            </div>*/}
           </div>
 
           <div className="hero-mockup">

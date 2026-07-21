@@ -20,7 +20,7 @@ export function Pricing() {
           <div className="pricing-glow" />
 
           <div className="pricing-content">
-            <span className="eyebrow eyebrow--gold">PRECIO</span>
+            {/*<span className="eyebrow eyebrow--gold">PRECIO</span>*/}
             <h2 className="pricing-h2">
               Simple, transparente,<br/><em>sin sorpresas.</em>
             </h2>

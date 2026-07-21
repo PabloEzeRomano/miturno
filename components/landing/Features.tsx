@@ -1,4 +1,5 @@
 'use client'
+import { QRCodeSVG } from 'qrcode.react'
 import { useCategory } from '@/lib/theme-context'
 
 export function Features() {
@@ -9,7 +10,7 @@ export function Features() {
       <div className="container">
         <div className="sec-intro">
           <div>
-            <span className="eyebrow eyebrow-gap">FUNCIONES</span>
+            {/*<span className="eyebrow eyebrow-gap">FUNCIONES</span>*/}
             <h2 className="sec-heading">
               Lo necesario,<br/><em>nada que sobre.</em>
             </h2>
@@ -31,7 +32,7 @@ export function Features() {
             <p className="bento-p">Tus clientes reservan desde el celular mientras vos atendés. Slots calculados según la duración del servicio y los turnos ya tomados.</p>
             <div className="bento-demo">
               <div className="cal-mini">
-                {['', 'VIE', 'SÁB', 'DOM'].map(d => <div key={d} className="cal-mini-hdr">{d}</div>)}
+                {['','JUE', 'VIE', 'SÁB'].map(d => <div key={d} className="cal-mini-hdr">{d}</div>)}
                 <div className="cal-mini-time">09</div>
                 <div className="cal-mini-appt cal-mini-appt--gold">Tomás · Corte + Barba</div>
                 <div className="cal-mini-appt cal-mini-appt--ink">Mariana · Puntas</div>
@@ -56,24 +57,22 @@ export function Features() {
               <span className="status-pill status-pill--confirmed"><span className="status-dot status-dot--ink" />Confirmado</span>
               <span className="status-pill status-pill--completed"><span className="status-dot status-dot--green" />Completado</span>
               <span className="status-pill status-pill--cancelled"><span className="status-dot status-dot--danger" />Cancelado</span>
-              <span className="badge badge-stat">+ Nuevo turno manual</span>
+              <span className="badge badge-stat">+ Nuevo turno</span>
             </div>
           </div>
 
           <div className="bento-cell">
             <div className="bento-icon-row">
               <div className="bento-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 7 9 6 9-6"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
               </div>
-              <span className="badge badge-soon">PRÓXIMAMENTE</span>
             </div>
             <h3 className="bento-h3">Recordatorios automáticos</h3>
-            <p className="bento-p">Email al cliente 3 horas antes del turno. Botones para cancelar o reprogramar sin pasar por vos. Menos ausencias, menos llamadas.</p>
+            <p className="bento-p">WhatsApp al cliente antes del turno. Botones para cancelar o reprogramar sin pasar por vos. Menos ausencias, menos llamadas.</p>
             <div className="bento-demo">
               <div className="reminder-card">
-                <div className="reminder-from">DE · {appName.toUpperCase()} &lt;recordatorios@{appName.toLowerCase()}.com&gt;</div>
-                <div className="reminder-subj">Te recordamos tu turno hoy</div>
-                <div className="reminder-body">Mariana, hoy a las <em>15:15</em> tenés Corte + Barba en tu local.</div>
+                <div className="reminder-from">📲 WhatsApp · {appName}</div>
+                <div className="reminder-body">Mariano, hoy a las <em>15:15</em> tenés Corte + Barba en tu local.</div>
                 <div className="reminder-links">
                   <a href="#" className="reminder-link">Reprogramar</a>
                   <a href="#" className="reminder-link">Cancelar</a>
@@ -100,7 +99,10 @@ export function Features() {
                   <span>Tu URL</span><span>no se cambia</span>
                 </div>
               </div>
-              <div className="qr-mock" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <QRCodeSVG value="https://miturno.gemm-apps.com" size={72} bgColor="transparent" fgColor="currentColor" />
+                <span style={{ fontSize: 10, opacity: 0.5, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'var(--f-mono)' }}>Tu propio QR</span>
+              </div>
             </div>
           </div>
         </div>

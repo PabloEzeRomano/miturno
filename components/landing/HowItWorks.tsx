@@ -9,7 +9,7 @@ export function HowItWorks() {
       <div className="container">
         <div className="sec-intro">
           <div>
-            <span className="eyebrow eyebrow-gap">CÓMO FUNCIONA</span>
+            {/*<span className="eyebrow eyebrow-gap">CÓMO FUNCIONA</span>*/}
             <h2 className="sec-heading" style={{ maxWidth: '18ch', textWrap: 'balance' } as React.CSSProperties}>
               Tres pasos, <em>y empezás a recibir reservas.</em>
             </h2>
