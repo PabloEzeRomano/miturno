@@ -51,22 +51,30 @@ export function TurnoClient({ appt }: { appt: ApptInfo }) {
   const cancelled = appt.status === 'cancelled'
 
   async function handleVerify() {
-    if (!phone.trim()) return
-    setLoading(true)
-    setVerifyError('')
-    const res = await fetch(`/api/turno/${appt.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, action: '_verify' }),
-    })
-    setLoading(false)
-    if (res.status === 403) {
-      setVerifyError('Número incorrecto. Usá el que ingresaste al reservar.')
+    if (!phone.trim()) {
+      setVerifyError('Ingresá tu número de teléfono.')
       return
     }
-    if (res.status === 400 || res.ok) { setView('detail'); return }
-    const body = await res.json()
-    setVerifyError(body.error ?? 'Error al verificar.')
+    setLoading(true)
+    setVerifyError('')
+    try {
+      const res = await fetch(`/api/turno/${appt.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, action: '_verify' }),
+      })
+      if (res.status === 403) {
+        setVerifyError('Número incorrecto. Usá el que ingresaste al reservar.')
+        return
+      }
+      if (res.status === 400 || res.ok) { setView('detail'); return }
+      const body = await res.json()
+      setVerifyError(body.error ?? 'Error al verificar.')
+    } catch {
+      setVerifyError('Error de conexión. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleCancel() {
