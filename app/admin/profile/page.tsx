@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react'
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { QRCodeSVG } from 'qrcode.react'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -86,6 +88,18 @@ export default function ProfilePage() {
             </div>
             <p className="field-hint">Tu URL no se puede cambiar para no romper las reservas existentes.</p>
           </div>
+
+          {slug && baseUrl && (
+            <div>
+              <label className="label">Tu QR</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 4 }}>
+                <QRCodeSVG value={`${baseUrl}/${slug}`} size={72} level="H" />
+                <Link href="/admin/qr" target="_blank" className="btn btn-outline btn-sm">
+                  Ver para imprimir
+                </Link>
+              </div>
+            </div>
+          )}
 
           {error && <div className="error-msg">{error}</div>}
 
