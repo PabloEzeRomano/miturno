@@ -132,6 +132,18 @@ model ReminderSettings {
   reviewHoursAfter            Float         @default(1.5)
 }
 
+model Notification {
+  id              String        @id @default(cuid())
+  establishmentId String
+  type            String        // new_booking | cancellation | reschedule
+  message         String
+  read            Boolean       @default(false)
+  appointmentId   String?
+  createdAt       DateTime      @default(now())
+
+  @@index([establishmentId, read])
+}
+
 model RecurringAppointment {
   id            String        @id @default(cuid())
   establishmentId String

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/lib/notifications'
 
 // Public endpoint — no auth required.
 // Returns appointment info without exposing clientPhone.
@@ -65,6 +66,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       where: { id: appt.id },
       data: { status: 'cancelled' },
     })
+    createNotification(
+      appt.establishmentId,
+      'cancellation',
+      `${appt.clientName} canceló su turno`,
+      appt.id,
+    )
     return NextResponse.json(updated)
   }
 
@@ -80,6 +87,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       where: { id: appt.id },
       data: { startsAt, endsAt, status: 'confirmed', cancelRescheduleSent: false },
     })
+    const dateStr = startsAt.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+    createNotification(
+      appt.establishmentId,
+      'reschedule',
+      `${appt.clientName} reprogramó su turno para el ${dateStr} a las ${time}`,
+      appt.id,
+    )
     return NextResponse.json(updated)
   }
 

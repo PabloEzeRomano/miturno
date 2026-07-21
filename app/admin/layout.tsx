@@ -5,6 +5,7 @@ import { getCategoryDef } from '@/lib/categories'
 import { ThemeProvider } from '@/lib/theme-context'
 import { PendingActivation } from '@/components/admin/PendingActivation'
 import { Sidebar } from '@/components/admin/Sidebar'
+import { NotificationBell } from '@/components/admin/NotificationBell'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -41,6 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           {children}
         </main>
       </div>
+      <NotificationBell />
     </ThemeProvider>
   )
 }

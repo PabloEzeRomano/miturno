@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { createNotification } from '@/lib/notifications'
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +41,15 @@ export async function POST(req: NextRequest) {
         endsAt,
       },
     })
+
+    const dateStr = startsAt.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+    const timeStr = startsAt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
+    createNotification(
+      establishmentId,
+      'new_booking',
+      `Nueva reserva: ${clientName} — ${service.name} el ${dateStr} a las ${timeStr}`,
+      appt.id,
+    )
 
     return NextResponse.json(appt, { status: 201 })
   } catch (err) {

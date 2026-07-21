@@ -89,6 +89,7 @@ export function Sidebar({ userName, role }: { userName: string; role: string }) 
               </Link>
             )
           })}
+
         </nav>
 
         <div className="sidebar-footer">

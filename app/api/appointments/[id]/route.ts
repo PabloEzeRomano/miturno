@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { createNotification } from '@/lib/notifications'
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
@@ -36,6 +37,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   if (body.status && ['confirmed', 'completed', 'cancelled'].includes(body.status)) {
     const updated = await prisma.appointment.update({ where: { id: params.id }, data: { status: body.status } })
+    if (body.status === 'cancelled') {
+      createNotification(
+        establishmentId,
+        'cancellation',
+        `Turno cancelado (admin): ${appt.clientName}`,
+        params.id,
+      )
+    }
     return NextResponse.json(updated)
   }
 
