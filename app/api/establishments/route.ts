@@ -25,7 +25,7 @@ async function sendNotification(name: string, shopName: string, email: string, p
         `Local: ${shopName}`,
         `Email: ${email}`,
         `Teléfono: ${phone}`,
-        `Slug: ${process.env.NEXT_PUBLIC_BASE_URL}${slug}`,
+        `Slug: ${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/${slug}`,
       ].join('\n'),
     })
   } catch (err) {
