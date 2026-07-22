@@ -1,6 +1,6 @@
 const EVO_URL = process.env.EVOLUTION_API_URL
 const EVO_KEY = process.env.EVOLUTION_API_KEY
-const EVO_INSTANCE = process.env.EVOLUTION_INSTANCE
+const EVO_INSTANCE = process.env.EVOLUTION_FALLBACK_INSTANCE
 
 function normalize(phone: string) {
   return phone.replace(/[\s\-()+ ]/g, '')

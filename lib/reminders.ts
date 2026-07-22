@@ -18,7 +18,7 @@ export async function runReminderCron(baseUrl: string, windowMins = 6) {
   let processed = 0
 
   for (const s of allSettings) {
-    const instance = s.waInstance ?? process.env.EVOLUTION_INSTANCE ?? null
+    const instance = s.waInstance ?? process.env.EVOLUTION_FALLBACK_INSTANCE ?? null
     console.log(`[cron] est=${s.establishmentId} instance=${instance} cancelReschedule=${s.cancelRescheduleEnabled} reminder=${s.reminderEnabled} review=${s.reviewEnabled}`)
 
     // 1. Cancel/reschedule reminder (X hours before)
