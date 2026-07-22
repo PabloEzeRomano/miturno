@@ -100,7 +100,7 @@ export async function DELETE(_req: NextRequest) {
   const settings = await prisma.reminderSettings.findUnique({ where: { establishmentId: estId } })
   const instanceName = settings?.waInstance ?? `est-${estId}`
 
-  await evoFetch(`/instance/logout/${instanceName}`, 'DELETE')
+  await evoFetch(`/instance/delete/${instanceName}`, 'DELETE')
   await prisma.reminderSettings.update({
     where: { establishmentId: estId },
     data: { waInstance: null },
