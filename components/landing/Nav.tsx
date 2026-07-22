@@ -2,9 +2,17 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
-export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
+import type { CategoryDef } from '@/lib/categories'
+
+interface NavProps {
+  isAuthenticated: boolean
+  activeTheme: string
+  onThemeChange: (id: string) => void
+  allThemes: CategoryDef[]
+}
+
+export function Nav({ isAuthenticated, activeTheme, onThemeChange, allThemes }: NavProps) {
   const [open, setOpen] = useState(false)
-  const homeHref = '/'
 
   useEffect(() => {
     if (!open) return
@@ -19,11 +27,27 @@ export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
     }
   }, [open])
 
+  const swatches = (
+    <div className="nav-theme-swatches">
+      {allThemes.map(t => (
+        <button
+          key={t.id}
+          type="button"
+          className={`nav-swatch${activeTheme === t.id ? ' nav-swatch--active' : ''}`}
+          style={{ background: t.theme.accent }}
+          aria-label={t.name}
+          aria-pressed={activeTheme === t.id}
+          onClick={() => onThemeChange(t.id)}
+        />
+      ))}
+    </div>
+  )
+
   return (
     <>
       <nav className="site-nav">
         <div className="container">
-          <Link href={homeHref} className="nav-logo">
+          <Link href="/" className="nav-logo">
             <BrandMark size={30} />
             <Wordmark size={22} />
           </Link>
@@ -34,6 +58,8 @@ export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
             <a href="#pricing" className="nav-link">Precio</a>
             <a href="#faq" className="nav-link">Preguntas</a>
           </div>
+
+          {swatches}
 
           <div className="nav-actions">
             {isAuthenticated ? (
@@ -68,6 +94,7 @@ export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
             <a href="#pricing" className="nav-sidebar-link" onClick={() => setOpen(false)}>Precio</a>
             <a href="#faq" className="nav-sidebar-link" onClick={() => setOpen(false)}>Preguntas</a>
           </div>
+          {swatches}
           <div className="nav-sidebar-actions">
             {isAuthenticated ? (
               <Link href="/admin/agenda" className="btn btn-primary" onClick={() => setOpen(false)}>Ir al panel</Link>

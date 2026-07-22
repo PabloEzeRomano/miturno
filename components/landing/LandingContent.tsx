@@ -1,4 +1,7 @@
 'use client'
+import { useState } from 'react'
+import { getCategoryDef, getAllCategoryDefs } from '@/lib/categories'
+import { ThemeProvider } from '@/lib/theme-context'
 import { Nav } from './Nav'
 import { Hero } from './Hero'
 import { HowItWorks } from './HowItWorks'
@@ -7,24 +10,23 @@ import { Pricing } from './Pricing'
 import { FAQ } from './FAQ'
 import { Footer } from './Footer'
 
+const allThemes = getAllCategoryDefs()
+
 export default function LandingContent({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const [themeId, setThemeId] = useState('barberia')
+  const category = getCategoryDef(themeId)
+
   return (
-    <>
-      <Nav isAuthenticated={isAuthenticated} />
+    <ThemeProvider category={category}>
+      <Nav isAuthenticated={isAuthenticated} activeTheme={themeId} onThemeChange={setThemeId} allThemes={allThemes} />
       <main>
         <Hero />
-        {/*<div className="landing-strip">
-          <div className="container">
-            <span className="strip-label">Pensado para tu negocio</span>
-            <span className="strip-quote"><em>«</em> Tomá turnos mientras atendés. <em>»</em></span>
-          </div>
-        </div>*/}
         <HowItWorks />
         <Features />
         <Pricing />
         <FAQ />
       </main>
       <Footer />
-    </>
+    </ThemeProvider>
   )
 }

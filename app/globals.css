@@ -1049,6 +1049,37 @@ button {
   transform: translateY(-7px) rotate(-45deg);
 }
 
+.nav-theme-swatches {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.nav-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  outline: none;
+}
+.nav-swatch:hover {
+  transform: scale(1.2);
+}
+.nav-swatch--active {
+  border-color: var(--c-ink);
+  transform: scale(1.15);
+}
+
+/* In mobile sidebar, give swatches more breathing room */
+.nav-sidebar .nav-theme-swatches {
+  gap: 10px;
+}
+.nav-sidebar .nav-swatch {
+  width: 20px;
+  height: 20px;
+}
+
 @media (max-width: 1024px) {
   .nav-hamburger { display: flex; }
 }
