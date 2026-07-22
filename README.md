@@ -21,7 +21,7 @@ Tus clientes reservan solos desde tu link. Vos dejás de contestar "¿tenés lug
 ## Features
 
 ### Para el cliente
-- **Página pública** en `[NEXT_PUBLIC_BASE_URL]/[slug]` — sin apps, sin registro
+- **Página pública** en `/[slug]` — sin apps, sin registro
 - **Booking en 4 pasos**: servicio → fecha → horario → datos de contacto
 - **Confirmación** con descarga de archivo ICS (Agregar al calendario)
 
@@ -79,7 +79,7 @@ npm run dev
 | `DATABASE_URL_UNPOOLED` | Connection string sin pool (para migraciones) |
 | `AUTH_SECRET` | Secreto de NextAuth |
 | `NEXTAUTH_URL` | URL base (ej: `http://localhost:3000`) |
-| `NEXT_PUBLIC_CONTACT_WHATSAPP` | WhatsApp de contacto |
+| `NEXT_PUBLIC_CONTACT_WHATSAPP` | Número de WhatsApp de contacto |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Email de contacto |
 | `RESEND_API_KEY` | API key de Resend |
 

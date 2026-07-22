@@ -1,9 +1,12 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useCategory } from '@/lib/theme-context'
 
 export function Features() {
   const { appName } = useCategory()
+  const [origin, setOrigin] = useState('')
+  useEffect(() => { setOrigin(window.location.origin) }, [])
 
   return (
     <section id="features" className="section section--surface section--bordered-v">
@@ -94,7 +97,7 @@ export function Features() {
                 <div className="page-url-row">
                   <span className="page-url-dot" />conexión segura · publicada
                 </div>
-                <div className="page-url-value">{process.env.NEXT_PUBLIC_BASE_URL}<em className="field-gold">tu-local</em></div>
+                <div className="page-url-value">{origin}/<em className="field-gold">tu-local</em></div>
                 <div className="page-url-meta">
                   <span>Tu URL</span><span>no se cambia</span>
                 </div>

@@ -1,8 +1,11 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { useCategory } from '@/lib/theme-context'
 
 export function HowItWorks() {
   const { appName, landingVertical } = useCategory()
+  const [origin, setOrigin] = useState('')
+  useEffect(() => { setOrigin(window.location.origin) }, [])
 
   return (
     <section id="how" className="section section--bg section--bordered">
@@ -58,7 +61,7 @@ export function HowItWorks() {
             <p className="step-p">Tus clientes reservan solos. Vos ves todo desde la agenda. Sin idas y vueltas por WhatsApp.</p>
             <div className="step-demo">
               <div className="step-link-bar">
-                <span>{process.env.NEXT_PUBLIC_BASE_URL}tu-local</span>
+                <span>{origin}/tu-local</span>
                 <span className="step-copy-btn">Copiar</span>
               </div>
             </div>

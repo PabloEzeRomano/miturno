@@ -14,10 +14,10 @@ export function Pricing() {
   const contactWA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '#'
 
   return (
-    <section id="pricing" className="section section--bg">
+    <section id="pricing" className="section pricing-section">
+      <div className="hero-gradient" />
       <div className="container">
         <div className="pricing-card">
-          <div className="pricing-glow" />
 
           <div className="pricing-content">
             {/*<span className="eyebrow eyebrow--gold">PRECIO</span>*/}

@@ -1,10 +1,13 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
 import { useCategory } from '@/lib/theme-context'
 
 export function Footer() {
   const { appName, slug } = useCategory()
+  const [origin, setOrigin] = useState('')
+  useEffect(() => { setOrigin(window.location.origin) }, [])
   const homeHref = `/${slug}`
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@gemm-apps.com'
   const contactWA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '#'
@@ -53,7 +56,7 @@ export function Footer() {
 
         <div className="footer-bottom">
           <span>© 2026 {appName} · <a href="https://gemm-apps.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>hecho con ♥ por gemm-apps</a></span>
-          <span className="footer-url">{process.env.NEXT_PUBLIC_BASE_URL}</span>
+          <span className="footer-url">{origin}</span>
         </div>
       </div>
     </footer>

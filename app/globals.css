@@ -1900,30 +1900,19 @@ button {
 }
 
 /* ---- Pricing ---- */
-.pricing-card {
+.pricing-section {
   background: var(--c-ink);
   color: #fff;
-  border-radius: var(--r-2);
-  padding: 64px 56px;
+  position: relative;
+  overflow: hidden;
+}
+.pricing-card {
+  color: #fff;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 56px;
   align-items: center;
   position: relative;
-  overflow: hidden;
-}
-.pricing-glow {
-  position: absolute;
-  right: -200px;
-  top: -200px;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(201, 168, 76, 0.18),
-    transparent 70%
-  );
 }
 .pricing-content {
   position: relative;
@@ -1984,7 +1973,6 @@ button {
 @media (max-width: 1024px) {
   .pricing-card {
     grid-template-columns: 1fr;
-    padding: 48px 36px;
   }
   .pricing-h2 {
     font-size: 40px;
@@ -2990,7 +2978,7 @@ button {
   .cal-mini-appt { font-size: 10px; padding: 5px 6px; }
 
   /* --- Pricing --- */
-  .pricing-card { padding: 40px 28px; gap: 32px; }
+  .pricing-card { gap: 32px; }
   .pricing-h2 { font-size: 34px; }
   .pricing-body { font-size: 15px; }
   .pricing-ctas { width: 100%; }
