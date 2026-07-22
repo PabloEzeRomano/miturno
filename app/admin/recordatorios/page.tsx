@@ -2,47 +2,47 @@
 import { useState, useEffect, useRef } from 'react'
 
 function WAConnect() {
-  const [state, setState] = useState<'loading' | 'open' | 'qr'>('loading')
-  const [qr, setQr] = useState<string | null>(null)
-  const [instanceName, setInstanceName] = useState<string | null>(null)
-  const stateIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const qrIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [state, setState] = useState<'loading' | 'open' | 'setup' | 'code'>('loading')
+  const [phone, setPhone] = useState('')
+  const [pairingCode, setPairingCode] = useState<string | null>(null)
+  const [working, setWorking] = useState(false)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  async function fetchState() {
+  async function checkState() {
     const res = await fetch('/api/wa-instance')
     const data = await res.json()
-    setInstanceName(data.instanceName)
     if (data.state === 'open') {
       setState('open')
-      if (stateIntervalRef.current) clearInterval(stateIntervalRef.current)
-      if (qrIntervalRef.current) clearInterval(qrIntervalRef.current)
-    } else {
-      setState('qr')
+      if (pollRef.current) clearInterval(pollRef.current)
+      // save instance to DB
+      fetch('/api/wa-instance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save' }) })
     }
-  }
-
-  async function fetchQr() {
-    const res = await fetch('/api/wa-instance?qr=1')
-    const data = await res.json()
-    if (data.state === 'open') { setState('open'); return }
-    if (data.qr) setQr(data.qr)
   }
 
   useEffect(() => {
-    fetchQr()
-    stateIntervalRef.current = setInterval(fetchState, 5000)
-    qrIntervalRef.current = setInterval(fetchQr, 17000)
-    return () => {
-      if (stateIntervalRef.current) clearInterval(stateIntervalRef.current)
-      if (qrIntervalRef.current) clearInterval(qrIntervalRef.current)
-    }
+    checkState().then(() => setState(s => s === 'loading' ? 'setup' : s))
+    return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, [])
+
+  async function handleGetCode() {
+    if (!phone.trim()) return
+    setWorking(true)
+    // ensure instance exists
+    await fetch('/api/wa-instance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create' }) })
+    const res = await fetch('/api/wa-instance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'pairingCode', phone }) })
+    const data = await res.json()
+    setPairingCode(data.code)
+    setState('code')
+    setWorking(false)
+    // poll state every 5s until connected
+    pollRef.current = setInterval(checkState, 5000)
+  }
 
   async function handleDisconnect() {
     await fetch('/api/wa-instance', { method: 'DELETE' })
-    setState('loading')
-    setQr(null)
-    fetchQr()
+    setState('setup')
+    setPairingCode(null)
+    setPhone('')
   }
 
   return (
@@ -62,16 +62,35 @@ function WAConnect() {
 
       {state === 'loading' && <p className="field-hint" style={{ marginTop: 12 }}>Verificando…</p>}
 
-      {state === 'qr' && (
+      {state === 'setup' && (
         <div style={{ marginTop: 16 }}>
           <p className="field-hint" style={{ marginBottom: 12 }}>
-            ⚠️ Requiere <strong>WhatsApp personal</strong> (no Business). Abrí WhatsApp → Dispositivos vinculados → Vincular dispositivo → escaneá este código.
+            ⚠️ Requiere <strong>WhatsApp personal</strong> (no Business). Ingresá el número con código de país, sin espacios.
           </p>
-          {qr
-            ? <img src={qr} alt="QR WhatsApp" style={{ width: 200, height: 200, borderRadius: 8, border: '1px solid var(--c-line)' }} />
-            : <p className="field-hint">Generando QR…</p>
-          }
-          <p className="field-hint" style={{ marginTop: 8, fontSize: 12 }}>El código se actualiza cada 17 segundos.</p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="input"
+              style={{ maxWidth: 200 }}
+              placeholder="5491122550533"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+            />
+            <button className="btn btn-primary btn-sm" onClick={handleGetCode} disabled={working || !phone.trim()}>
+              {working ? 'Generando…' : 'Obtener código'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {state === 'code' && pairingCode && (
+        <div style={{ marginTop: 16 }}>
+          <p className="field-hint" style={{ marginBottom: 8 }}>
+            En WhatsApp → <strong>Dispositivos vinculados</strong> → Vincular dispositivo → <strong>Vincular con número de teléfono</strong> → ingresá este código:
+          </p>
+          <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: 6, fontFamily: 'monospace', color: 'var(--c-gold)' }}>
+            {pairingCode}
+          </div>
+          <p className="field-hint" style={{ marginTop: 8 }}>Esperando conexión…</p>
         </div>
       )}
     </div>
