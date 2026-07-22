@@ -3014,6 +3014,9 @@ button {
 
   .sidebar-mobile-bar { display: flex; }
 
+  /* Bell shifts left to clear the hamburger button (36px btn + 16px padding + 12px gap) */
+  .notif-bell-wrap { right: 64px; }
+
   .sidebar {
     position: fixed;
     top: 0;
