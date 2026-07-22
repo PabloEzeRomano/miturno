@@ -9,7 +9,7 @@ import { getCategoryDef, DEFAULT_CATEGORY_SLUG } from '@/lib/categories'
 
 const NOTIFICATION_EMAIL = 'pabloezeromano@gmail.com'
 
-async function sendNotification(name: string, shopName: string, email: string, phone: string, slug: string, appName: string) {
+async function sendNotification(name: string, shopName: string, email: string, phone: string, slug: string, appName: string, baseUrl: string) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not configured — skipping notification.')
     return
@@ -25,7 +25,7 @@ async function sendNotification(name: string, shopName: string, email: string, p
         `Local: ${shopName}`,
         `Email: ${email}`,
         `Teléfono: ${phone}`,
-        `Slug: ${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/${slug}`,
+        `Slug: ${baseUrl}/${slug}`,
       ].join('\n'),
     })
   } catch (err) {
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
       return establishment
     })
 
-    sendNotification(name, shopName, email, phone, slug, appName)
+    sendNotification(name, shopName, email, phone, slug, appName, new URL(req.url).origin)
 
     return NextResponse.json({ id: result.id, slug: result.slug }, { status: 201 })
   } catch (err) {
