@@ -28,15 +28,14 @@ async function evoFetch(path: string, method = 'GET', body?: object) {
   return res.ok ? res.json() : null
 }
 
-// GET /api/wa-instance → returns { state, qr?, instanceName }
-export async function GET(_req: NextRequest) {
+// GET /api/wa-instance?qr=1 → get state (+ fresh QR only when qr=1)
+export async function GET(req: NextRequest) {
   const estId = await getEstablishmentId()
   if (!estId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const settings = await prisma.reminderSettings.findUnique({ where: { establishmentId: estId } })
   const instanceName = settings?.waInstance ?? process.env.EVOLUTION_INSTANCE ?? `est-${estId}`
 
-  // Check connection state
   const stateData = await evoFetch(`/instance/connectionState/${instanceName}`)
   const state = stateData?.instance?.state ?? 'close'
 
@@ -44,20 +43,18 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ state: 'open', instanceName })
   }
 
-  // Ensure instance exists
-  await evoFetch('/instance/create', 'POST', {
-    instanceName,
-    integration: 'WHATSAPP-BAILEYS',
-    qrcode: true,
-  })
+  // Only fetch/regenerate QR when explicitly requested
+  if (req.nextUrl.searchParams.get('qr') === '1') {
+    await evoFetch('/instance/create', 'POST', {
+      instanceName,
+      integration: 'WHATSAPP-BAILEYS',
+      qrcode: true,
+    })
+    const connectData = await evoFetch(`/instance/connect/${instanceName}`)
+    return NextResponse.json({ state: 'qr', instanceName, qr: connectData?.base64 ?? null })
+  }
 
-  // Get QR
-  const connectData = await evoFetch(`/instance/connect/${instanceName}`)
-  return NextResponse.json({
-    state: 'qr',
-    instanceName,
-    qr: connectData?.base64 ?? null,
-  })
+  return NextResponse.json({ state: 'qr', instanceName, qr: null })
 }
 
 // POST /api/wa-instance → save instance name to DB

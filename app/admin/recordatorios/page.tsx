@@ -5,32 +5,44 @@ function WAConnect() {
   const [state, setState] = useState<'loading' | 'open' | 'qr'>('loading')
   const [qr, setQr] = useState<string | null>(null)
   const [instanceName, setInstanceName] = useState<string | null>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const stateIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const qrIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  async function fetchStatus() {
+  async function fetchState() {
     const res = await fetch('/api/wa-instance')
     const data = await res.json()
     setInstanceName(data.instanceName)
     if (data.state === 'open') {
       setState('open')
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (stateIntervalRef.current) clearInterval(stateIntervalRef.current)
+      if (qrIntervalRef.current) clearInterval(qrIntervalRef.current)
     } else {
       setState('qr')
-      setQr(data.qr)
     }
   }
 
+  async function fetchQr() {
+    const res = await fetch('/api/wa-instance?qr=1')
+    const data = await res.json()
+    if (data.state === 'open') { setState('open'); return }
+    if (data.qr) setQr(data.qr)
+  }
+
   useEffect(() => {
-    fetchStatus()
-    intervalRef.current = setInterval(fetchStatus, 17000)
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+    fetchQr()
+    stateIntervalRef.current = setInterval(fetchState, 5000)
+    qrIntervalRef.current = setInterval(fetchQr, 17000)
+    return () => {
+      if (stateIntervalRef.current) clearInterval(stateIntervalRef.current)
+      if (qrIntervalRef.current) clearInterval(qrIntervalRef.current)
+    }
   }, [])
 
   async function handleDisconnect() {
     await fetch('/api/wa-instance', { method: 'DELETE' })
     setState('loading')
     setQr(null)
-    fetchStatus()
+    fetchQr()
   }
 
   return (
