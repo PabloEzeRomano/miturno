@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === 'pairingCode') {
-    const phone = String(body.phone).replace(/[\s\-()+ ]/g, '')
+    const phone = '549' + String(body.phone).replace(/[\s\-()+ ]/g, '')
     console.log(`[wa-instance] requesting pairing code for phone=${phone}`)
     const data = await evoFetch(`/instance/pairingCode/${instanceName}`, 'POST', { phoneNumber: phone })
     console.log(`[wa-instance] pairingCode result:`, JSON.stringify(data))

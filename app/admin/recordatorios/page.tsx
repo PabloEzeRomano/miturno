@@ -65,13 +65,14 @@ function WAConnect() {
       {state === 'setup' && (
         <div style={{ marginTop: 16 }}>
           <p className="field-hint" style={{ marginBottom: 12 }}>
-            ⚠️ Requiere <strong>WhatsApp personal</strong> (no Business). Ingresá el número con código de país, sin espacios.
+            ⚠️ Requiere <strong>WhatsApp personal</strong> (no Business). Ingresá el número sin el 0 ni el 15.
           </p>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 14, color: 'var(--c-muted)', whiteSpace: 'nowrap' }}>+549</span>
             <input
               className="input"
-              style={{ maxWidth: 200 }}
-              placeholder="5491122550533"
+              style={{ maxWidth: 160 }}
+              placeholder="11 2255 0533"
               value={phone}
               onChange={e => setPhone(e.target.value)}
             />
