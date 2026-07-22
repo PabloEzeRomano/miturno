@@ -28,20 +28,28 @@ async function evoFetch(path: string, method = 'GET', body?: object) {
   return res.ok ? res.json() : null
 }
 
-// GET /api/wa-instance → returns { state, instanceName }
-export async function GET(_req: NextRequest) {
+// GET /api/wa-instance → state only. ?qr=1 → also create instance + return QR
+export async function GET(req: NextRequest) {
   const estId = await getEstablishmentId()
   if (!estId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Always use est-{estId} for the UI — never fall back to EVOLUTION_INSTANCE
   const instanceName = `est-${estId}`
-  console.log(`[wa-instance] GET estId=${estId} instanceName=${instanceName}`)
+  console.log(`[wa-instance] GET estId=${estId} instanceName=${instanceName} qr=${req.nextUrl.searchParams.get('qr')}`)
 
   const stateData = await evoFetch(`/instance/connectionState/${instanceName}`)
   const state = stateData?.instance?.state ?? 'close'
   console.log(`[wa-instance] state=${state}`)
 
-  return NextResponse.json({ state: state === 'open' ? 'open' : 'close', instanceName })
+  if (state === 'open') return NextResponse.json({ state: 'open', instanceName })
+
+  if (req.nextUrl.searchParams.get('qr') === '1') {
+    await evoFetch('/instance/create', 'POST', { instanceName, integration: 'WHATSAPP-BAILEYS', qrcode: true })
+    const connectData = await evoFetch(`/instance/connect/${instanceName}`)
+    console.log(`[wa-instance] QR fetched, base64 present=${!!connectData?.base64}`)
+    return NextResponse.json({ state: 'qr', instanceName, qr: connectData?.base64 ?? null })
+  }
+
+  return NextResponse.json({ state: 'close', instanceName })
 }
 
 // POST /api/wa-instance { action: 'create' | 'pairingCode', phone? }
