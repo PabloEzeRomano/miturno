@@ -61,18 +61,6 @@ export default function RecordatoriosPage() {
   const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [testResult, setTestResult] = useState<string | null>(null)
-
-  async function handleTest() {
-    setTesting(true)
-    setTestResult(null)
-    const res = await fetch('/api/cron/reminders?window=30')
-    const data = await res.json()
-    setTestResult(`Procesados: ${data.processed ?? 0} turno(s)`)
-    setTesting(false)
-  }
-
   useEffect(() => {
     fetch('/api/reminder-settings')
       .then(r => r.json())
@@ -108,10 +96,6 @@ export default function RecordatoriosPage() {
           <h1 className="page-title">Recordatorios</h1>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {testResult && <span style={{ fontSize: 13, color: 'var(--c-muted)' }}>{testResult}</span>}
-          <button className="btn btn-outline btn-sm" onClick={handleTest} disabled={testing}>
-            {testing ? 'Ejecutando…' : 'Probar ahora'}
-          </button>
           <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
             {saved ? '¡Guardado!' : saving ? 'Guardando…' : 'Guardar cambios'}
           </button>
