@@ -4,12 +4,16 @@ import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
+import { getAllCategoryDefs } from '@/lib/categories'
+
+const allThemes = getAllCategoryDefs()
 
 export default function ProfilePage() {
   const router = useRouter()
   const [form, setForm] = useState({ name: '', phone: '', shopName: '' })
   const [slug, setSlug] = useState('')
   const [role, setRole] = useState('')
+  const [categoryId, setCategoryId] = useState('barberia')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -24,8 +28,19 @@ export default function ProfilePage() {
       setForm({ name: data.name || '', phone: data.phone || '', shopName: data.shopName || '' })
       setSlug(data.slug || '')
       setRole(data.role || '')
+      setCategoryId(data.categoryId || 'barberia')
     }).catch(() => {})
   }, [])
+
+  async function changeTheme(id: string) {
+    setCategoryId(id)
+    await fetch('/api/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categoryId: id }),
+    })
+    router.refresh()
+  }
 
   async function save() {
     setSaving(true)
@@ -80,6 +95,26 @@ export default function ProfilePage() {
             <label className="label">Teléfono</label>
             <input className="input" type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+54 9 11 1234-5678" />
           </div>
+
+          {role === 'Owner' && (
+            <div>
+              <label className="label">Color de tu marca</label>
+              <div className="color-picker" style={{ marginTop: 6 }}>
+                {allThemes.map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => changeTheme(t.id)}
+                    className={`color-swatch${categoryId === t.id ? ' color-swatch--sel' : ''}`}
+                    title={t.name}
+                    aria-label={t.name}
+                    aria-pressed={categoryId === t.id}
+                    style={{ background: t.theme.accent, '--swatch-color': t.theme.accent } as React.CSSProperties}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="label">Tu URL</label>

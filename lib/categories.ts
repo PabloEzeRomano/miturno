@@ -42,7 +42,7 @@ export interface CategoryDef {
 const categories: Record<string, Omit<CategoryDef, 'id'>> = {
   barberia: {
     slug: 'barberia',
-    name: 'Barberías & Peluquerías',
+    name: 'Dorado',
     appName: 'miturno',
     wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu negocio, online y organizado en minutos.',
@@ -80,7 +80,7 @@ const categories: Record<string, Omit<CategoryDef, 'id'>> = {
 
   clinica: {
     slug: 'clinica',
-    name: 'Clínicas & Consultorios',
+    name: 'Azul',
     appName: 'miturno',
     wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu negocio, online y organizado en minutos.',
@@ -117,7 +117,7 @@ const categories: Record<string, Omit<CategoryDef, 'id'>> = {
 
   estetica: {
     slug: 'estetica',
-    name: 'Centros de Estética & Nails',
+    name: 'Rosa',
     appName: 'miturno',
     wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu negocio, online y organizado en minutos.',
@@ -155,7 +155,7 @@ const categories: Record<string, Omit<CategoryDef, 'id'>> = {
 
   hairimplants: {
     slug: 'hairimplants',
-    name: 'Implantes Capilares',
+    name: 'Verde',
     appName: 'miturno',
     wordmark: { base: 'mi', italic: 'turno' },
     tagline: 'Tu negocio, online y organizado en minutos.',

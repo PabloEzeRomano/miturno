@@ -12,7 +12,7 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, phone: true, role: true, establishment: { select: { shopName: true, slug: true, phone: true } } },
+    select: { id: true, name: true, email: true, phone: true, role: true, establishment: { select: { shopName: true, slug: true, phone: true, categoryId: true } } },
   })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   const { establishment, ...rest } = user
@@ -26,18 +26,19 @@ export async function PATCH(req: NextRequest) {
   if (!establishmentId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const currentUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } })
-  const { name, phone, shopName } = await req.json()
+  const { name, phone, shopName, categoryId } = await req.json()
 
   const userData: Record<string, string> = {}
   if (name !== undefined) userData.name = name
 
   const estData: Record<string, string> = {}
   if (phone !== undefined) estData.phone = phone
-  if (shopName !== undefined) {
+  if (shopName !== undefined || categoryId !== undefined) {
     if (currentUser?.role !== 'Owner') {
       return NextResponse.json({ error: 'Solo el dueño puede cambiar el nombre del local.' }, { status: 403 })
     }
-    estData.shopName = shopName
+    if (shopName !== undefined) estData.shopName = shopName
+    if (categoryId !== undefined) estData.categoryId = categoryId
   }
 
   await prisma.$transaction([
