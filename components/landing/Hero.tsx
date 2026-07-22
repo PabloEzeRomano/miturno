@@ -51,7 +51,7 @@ export function Hero() {
               </span>
               <div>
                 <strong className="hero-float-title">Nuevo turno reservado</strong>
-                <span className="hero-float-sub">15:15 · Mariana L.</span>
+                <span className="hero-float-sub">15:15 · Mariano</span>
               </div>
             </div>
 

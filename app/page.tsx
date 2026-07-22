@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation'
+import { auth } from '@/lib/auth'
+import LandingContent from '@/components/landing/LandingContent'
 
-export default function RootPage() {
-  redirect('/barberia')
+export default async function HomePage() {
+  const session = await auth()
+  return <LandingContent isAuthenticated={!!session} />
 }

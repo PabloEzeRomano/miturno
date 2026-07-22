@@ -5,10 +5,10 @@ import { BrandMark, Wordmark } from '@/components/Brand'
 import { useCategory } from '@/lib/theme-context'
 
 export function Footer() {
-  const { appName, slug } = useCategory()
+  const { appName } = useCategory()
   const [origin, setOrigin] = useState('')
   useEffect(() => { setOrigin(window.location.origin) }, [])
-  const homeHref = `/${slug}`
+  const homeHref = '/'
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@gemm-apps.com'
   const contactWA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || '#'
 

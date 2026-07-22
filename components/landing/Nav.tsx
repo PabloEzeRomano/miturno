@@ -2,12 +2,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
-import { useCategory } from '@/lib/theme-context'
-
 export function Nav({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const { slug } = useCategory()
-  const homeHref = `/${slug}`
   const [open, setOpen] = useState(false)
+  const homeHref = '/'
 
   useEffect(() => {
     if (!open) return
