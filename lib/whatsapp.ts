@@ -6,13 +6,18 @@ function normalize(phone: string) {
   return phone.replace(/[\s\-()+ ]/g, '')
 }
 
-export async function sendWhatsAppText(phone: string, message: string): Promise<boolean> {
-  if (!EVO_URL || !EVO_KEY || !EVO_INSTANCE) {
+export async function sendWhatsAppText(
+  phone: string,
+  message: string,
+  instance?: string | null
+): Promise<boolean> {
+  const inst = instance ?? EVO_INSTANCE
+  if (!EVO_URL || !EVO_KEY || !inst) {
     console.log(`[WhatsApp MOCK] → ${phone}\n${message}\n`)
     return true
   }
   try {
-    const res = await fetch(`${EVO_URL}/message/sendText/${EVO_INSTANCE}`, {
+    const res = await fetch(`${EVO_URL}/message/sendText/${inst}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
       body: JSON.stringify({ number: normalize(phone), text: message }),
@@ -29,9 +34,10 @@ export async function sendWhatsAppTemplate(
   phone: string,
   _templateName: string,
   _languageCode: string,
-  params: string[]
+  params: string[],
+  instance?: string | null
 ): Promise<boolean> {
   const [clientName, shopName, time, link] = params
   const text = `Hola ${clientName}! Tenés un turno en *${shopName}* a las ${time}.\n\nPara cancelar o reprogramar:\n${link}`
-  return sendWhatsAppText(phone, text)
+  return sendWhatsAppText(phone, text, instance)
 }

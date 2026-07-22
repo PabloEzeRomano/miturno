@@ -123,6 +123,7 @@ model ReminderSettings {
   establishment               Establishment @relation(fields: [establishmentId], references: [id])
   waApiKey                    String?
   waPhoneNumberId             String?
+  waInstance                  String?
   googleReviewUrl             String?
   cancelRescheduleEnabled     Boolean       @default(false)
   cancelRescheduleHoursBefore Float         @default(5)

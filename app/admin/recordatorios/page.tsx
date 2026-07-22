@@ -1,5 +1,70 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+function WAConnect() {
+  const [state, setState] = useState<'loading' | 'open' | 'qr'>('loading')
+  const [qr, setQr] = useState<string | null>(null)
+  const [instanceName, setInstanceName] = useState<string | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  async function fetchStatus() {
+    const res = await fetch('/api/wa-instance')
+    const data = await res.json()
+    setInstanceName(data.instanceName)
+    if (data.state === 'open') {
+      setState('open')
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    } else {
+      setState('qr')
+      setQr(data.qr)
+    }
+  }
+
+  useEffect(() => {
+    fetchStatus()
+    intervalRef.current = setInterval(fetchStatus, 17000)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [])
+
+  async function handleDisconnect() {
+    await fetch('/api/wa-instance', { method: 'DELETE' })
+    setState('loading')
+    setQr(null)
+    fetchStatus()
+  }
+
+  return (
+    <div className="panel panel--mb">
+      <div className="reminder-row-header">
+        <div>
+          <h2 className="section-title" style={{ fontSize: 16, marginBottom: 4 }}>WhatsApp</h2>
+          <p className="field-hint">Conectá el número del negocio para enviar recordatorios.</p>
+        </div>
+        {state === 'open' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: 'var(--c-success)', fontWeight: 600, fontSize: 13 }}>✓ Conectado</span>
+            <button className="btn btn-outline btn-sm" onClick={handleDisconnect}>Desconectar</button>
+          </div>
+        )}
+      </div>
+
+      {state === 'loading' && <p className="field-hint" style={{ marginTop: 12 }}>Verificando…</p>}
+
+      {state === 'qr' && (
+        <div style={{ marginTop: 16 }}>
+          <p className="field-hint" style={{ marginBottom: 12 }}>
+            ⚠️ Requiere <strong>WhatsApp personal</strong> (no Business). Abrí WhatsApp → Dispositivos vinculados → Vincular dispositivo → escaneá este código.
+          </p>
+          {qr
+            ? <img src={qr} alt="QR WhatsApp" style={{ width: 200, height: 200, borderRadius: 8, border: '1px solid var(--c-line)' }} />
+            : <p className="field-hint">Generando QR…</p>
+          }
+          <p className="field-hint" style={{ marginTop: 8, fontSize: 12 }}>El código se actualiza cada 17 segundos.</p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function HoursMinutesPicker({ value, onChange, maxHours = 48 }: {
   value: number
@@ -101,6 +166,8 @@ export default function RecordatoriosPage() {
           </button>
         </div>
       </div>
+
+      <WAConnect />
 
       {/* Cancel/reschedule */}
       <div className="panel panel--mb">

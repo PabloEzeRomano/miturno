@@ -18,7 +18,8 @@ export async function runReminderCron(baseUrl: string, windowMins = 6) {
   let processed = 0
 
   for (const s of allSettings) {
-    console.log(`[cron] est=${s.establishmentId} cancelReschedule=${s.cancelRescheduleEnabled} reminder=${s.reminderEnabled} review=${s.reviewEnabled}`)
+    const instance = s.waInstance ?? process.env.EVOLUTION_INSTANCE ?? null
+    console.log(`[cron] est=${s.establishmentId} instance=${instance} cancelReschedule=${s.cancelRescheduleEnabled} reminder=${s.reminderEnabled} review=${s.reviewEnabled}`)
 
     // 1. Cancel/reschedule reminder (X hours before)
     if (s.cancelRescheduleEnabled) {
@@ -43,7 +44,8 @@ export async function runReminderCron(baseUrl: string, windowMins = 6) {
           appt.clientPhone,
           'reprogramar_cancelar',
           'es_AR',
-          [appt.clientName, appt.establishment.shopName, formatTime(appt.startsAt), link]
+          [appt.clientName, appt.establishment.shopName, formatTime(appt.startsAt), link],
+          instance
         )
         console.log(`[cron] cancelReschedule sent=${ok} to=${appt.clientPhone}`)
         if (ok) {
@@ -76,7 +78,7 @@ export async function runReminderCron(baseUrl: string, windowMins = 6) {
           `es en ${label}.\n` +
           `${formatDate(appt.startsAt)} a las ${formatTime(appt.startsAt)} — ${appt.service.name}.`
 
-        const ok = await sendWhatsAppText(appt.clientPhone, msg)
+        const ok = await sendWhatsAppText(appt.clientPhone, msg, instance)
         if (ok) {
           await prisma.appointment.update({ where: { id: appt.id }, data: { reminderSent: true } })
           processed++
@@ -105,7 +107,7 @@ export async function runReminderCron(baseUrl: string, windowMins = 6) {
           `¡Gracias por visitarnos, ${appt.clientName}! 💈\n` +
           `Nos alegraría que nos dejes una reseña:\n${s.googleReviewUrl}`
 
-        const ok = await sendWhatsAppText(appt.clientPhone, msg)
+        const ok = await sendWhatsAppText(appt.clientPhone, msg, instance)
         if (ok) {
           await prisma.appointment.update({ where: { id: appt.id }, data: { reviewSent: true } })
           processed++
