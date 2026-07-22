@@ -1,7 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { sendWhatsAppText } from '@/lib/whatsapp'
-import { sendSMS } from '@/lib/sms'
-import { safeDecrypt } from '@/lib/crypto'
+import { sendWhatsAppText, sendWhatsAppTemplate } from '@/lib/whatsapp'
 
 function formatDate(d: Date) {
   return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -11,23 +9,16 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
-export async function runReminderCron(baseUrl: string) {
+export async function runReminderCron(baseUrl: string, windowMins = 6) {
   const now = new Date()
-  const WINDOW_MS = 6 * 60 * 1000 // ±6 min; run cron every ≤10 min
+  const WINDOW_MS = windowMins * 60 * 1000
 
   const allSettings = await prisma.reminderSettings.findMany()
-  console.log(`[cron] ${allSettings.length} establishment(s) con settings. now=${now.toISOString()}`)
+  console.log(`[cron] ${allSettings.length} establishment(s). now=${now.toISOString()}`)
   let processed = 0
 
   for (const s of allSettings) {
-    const decryptedKey = safeDecrypt(s.waApiKey)
-    const waCreds = decryptedKey && s.waPhoneNumberId
-      ? { waApiKey: decryptedKey, waPhoneNumberId: s.waPhoneNumberId }
-      : null
-    console.log(`[cron] est=${s.establishmentId} cancelReschedule=${s.cancelRescheduleEnabled} reminder=${s.reminderEnabled} review=${s.reviewEnabled} channel=${waCreds ? 'whatsapp' : 'sms'}`)
-
-    const send = (phone: string, message: string): Promise<boolean> =>
-      waCreds ? sendWhatsAppText(phone, message, waCreds) : sendSMS(phone, message)
+    console.log(`[cron] est=${s.establishmentId} cancelReschedule=${s.cancelRescheduleEnabled} reminder=${s.reminderEnabled} review=${s.reviewEnabled}`)
 
     // 1. Cancel/reschedule reminder (X hours before)
     if (s.cancelRescheduleEnabled) {
@@ -42,20 +33,18 @@ export async function runReminderCron(baseUrl: string) {
             lte: new Date(now.getTime() + hoursMs + WINDOW_MS),
           },
         },
-        include: { service: true, establishment: true, user: { select: { name: true } } },
+        include: { service: true, establishment: true },
       })
 
       console.log(`[cron] cancelReschedule: ${appts.length} turno(s) en ventana`)
       for (const appt of appts) {
         const link = `${baseUrl}/turno/${appt.id}`
-        const msg =
-          `Hola ${appt.clientName}! 👋\n` +
-          `Tenés un turno en *${appt.establishment.shopName}* ` +
-          `el ${formatDate(appt.startsAt)} a las ${formatTime(appt.startsAt)}.\n` +
-          `Servicio: ${appt.service.name} con ${appt.user.name}.\n\n` +
-          `Para cancelar o reprogramar:\n${link}`
-
-        const ok = await send(appt.clientPhone, msg)
+        const ok = await sendWhatsAppTemplate(
+          appt.clientPhone,
+          'reprogramar_cancelar',
+          'es_AR',
+          [appt.clientName, appt.establishment.shopName, formatTime(appt.startsAt), link]
+        )
         console.log(`[cron] cancelReschedule sent=${ok} to=${appt.clientPhone}`)
         if (ok) {
           await prisma.appointment.update({ where: { id: appt.id }, data: { cancelRescheduleSent: true } })
@@ -77,7 +66,7 @@ export async function runReminderCron(baseUrl: string) {
             lte: new Date(now.getTime() + hoursMs + WINDOW_MS),
           },
         },
-        include: { service: true, establishment: true, user: { select: { name: true } } },
+        include: { service: true, establishment: true },
       })
 
       for (const appt of appts) {
@@ -87,7 +76,7 @@ export async function runReminderCron(baseUrl: string) {
           `es en ${label}.\n` +
           `${formatDate(appt.startsAt)} a las ${formatTime(appt.startsAt)} — ${appt.service.name}.`
 
-        const ok = await send(appt.clientPhone, msg)
+        const ok = await sendWhatsAppText(appt.clientPhone, msg)
         if (ok) {
           await prisma.appointment.update({ where: { id: appt.id }, data: { reminderSent: true } })
           processed++
@@ -116,7 +105,7 @@ export async function runReminderCron(baseUrl: string) {
           `¡Gracias por visitarnos, ${appt.clientName}! 💈\n` +
           `Nos alegraría que nos dejes una reseña:\n${s.googleReviewUrl}`
 
-        const ok = await send(appt.clientPhone, msg)
+        const ok = await sendWhatsAppText(appt.clientPhone, msg)
         if (ok) {
           await prisma.appointment.update({ where: { id: appt.id }, data: { reviewSent: true } })
           processed++
@@ -128,7 +117,6 @@ export async function runReminderCron(baseUrl: string) {
   return processed
 }
 
-// Legacy compat
 export async function sendAppointmentReminder(_appointmentId: string) {
   console.log('[reminders] Legacy sendAppointmentReminder called — use runReminderCron')
 }

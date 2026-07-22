@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   }
 
   const baseUrl = req.nextUrl.origin
-  const processed = await runReminderCron(baseUrl)
+  const windowMins = Number(req.nextUrl.searchParams.get('window') ?? '6')
+  const processed = await runReminderCron(baseUrl, windowMins)
   return NextResponse.json({ processed })
 }

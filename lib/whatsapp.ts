@@ -1,50 +1,37 @@
-// WhatsApp Business Cloud API sender.
-// Production: set waApiKey + waPhoneNumberId in ReminderSettings and use pre-approved templates.
-// Mock mode: logs message to console, returns true.
+const EVO_URL = process.env.EVOLUTION_API_URL
+const EVO_KEY = process.env.EVOLUTION_API_KEY
+const EVO_INSTANCE = process.env.EVOLUTION_INSTANCE
 
-interface WACredentials {
-  waApiKey: string
-  waPhoneNumberId: string
+function normalize(phone: string) {
+  return phone.replace(/[\s\-()+ ]/g, '')
 }
 
-export async function sendWhatsAppText(
-  phone: string,
-  message: string,
-  creds: WACredentials | null
-): Promise<boolean> {
-  if (!creds?.waApiKey || !creds?.waPhoneNumberId) {
+export async function sendWhatsAppText(phone: string, message: string): Promise<boolean> {
+  if (!EVO_URL || !EVO_KEY || !EVO_INSTANCE) {
     console.log(`[WhatsApp MOCK] → ${phone}\n${message}\n`)
     return true
   }
-
-  // Meta expects E.164 without leading +, digits only
-  const normalized = phone.replace(/[\s\-()+ ]/g, '')
-
   try {
-    const res = await fetch(
-      `https://graph.facebook.com/v19.0/${creds.waPhoneNumberId}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${creds.waApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to: normalized,
-          type: 'text',
-          text: { body: message },
-        }),
-      }
-    )
-    if (!res.ok) {
-      const err = await res.text()
-      console.error(`[WhatsApp] Error sending to ${normalized}:`, err)
-      return false
-    }
-    return true
+    const res = await fetch(`${EVO_URL}/message/sendText/${EVO_INSTANCE}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
+      body: JSON.stringify({ number: normalize(phone), text: message }),
+    })
+    if (!res.ok) console.error(`[Evolution] Error to ${normalize(phone)}:`, await res.text())
+    return res.ok
   } catch (err) {
-    console.error(`[WhatsApp] Network error:`, err)
+    console.error(`[Evolution] Network error:`, err)
     return false
   }
+}
+
+export async function sendWhatsAppTemplate(
+  phone: string,
+  _templateName: string,
+  _languageCode: string,
+  params: string[]
+): Promise<boolean> {
+  const [clientName, shopName, time, link] = params
+  const text = `Hola ${clientName}! Tenés un turno en *${shopName}* a las ${time}.\n\nPara cancelar o reprogramar:\n${link}`
+  return sendWhatsAppText(phone, text)
 }

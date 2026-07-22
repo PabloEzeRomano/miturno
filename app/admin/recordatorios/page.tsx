@@ -1,10 +1,42 @@
 'use client'
 import { useState, useEffect } from 'react'
 
+function HoursMinutesPicker({ value, onChange, maxHours = 48 }: {
+  value: number
+  onChange: (v: number) => void
+  maxHours?: number
+}) {
+  const h = Math.floor(value)
+  const m = Math.round(((value - h) * 60) / 15) * 15
+
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <select
+        className="input"
+        style={{ width: 80 }}
+        value={h}
+        onChange={e => onChange(Number(e.target.value) + m / 60)}
+      >
+        {Array.from({ length: maxHours + 1 }, (_, i) => (
+          <option key={i} value={i}>{i}h</option>
+        ))}
+      </select>
+      <select
+        className="input"
+        style={{ width: 90 }}
+        value={m}
+        onChange={e => onChange(h + Number(e.target.value) / 60)}
+      >
+        {[0, 15, 30, 45].map(min => (
+          <option key={min} value={min}>{String(min).padStart(2, '0')} min</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 interface Settings {
   id?: string
-  waApiKey?: string
-  waPhoneNumberId?: string
   googleReviewUrl?: string
   cancelRescheduleEnabled: boolean
   cancelRescheduleHoursBefore: number
@@ -15,8 +47,6 @@ interface Settings {
 }
 
 const DEFAULTS: Settings = {
-  waApiKey: '',
-  waPhoneNumberId: '',
   googleReviewUrl: '',
   cancelRescheduleEnabled: false,
   cancelRescheduleHoursBefore: 5,
@@ -31,6 +61,17 @@ export default function RecordatoriosPage() {
   const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<string | null>(null)
+
+  async function handleTest() {
+    setTesting(true)
+    setTestResult(null)
+    const res = await fetch('/api/cron/reminders?window=30')
+    const data = await res.json()
+    setTestResult(`Procesados: ${data.processed ?? 0} turno(s)`)
+    setTesting(false)
+  }
 
   useEffect(() => {
     fetch('/api/reminder-settings')
@@ -66,39 +107,14 @@ export default function RecordatoriosPage() {
           <span className="eyebrow eyebrow-block">ADMINISTRACIÓN</span>
           <h1 className="page-title">Recordatorios</h1>
         </div>
-        <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-          {saved ? '¡Guardado!' : saving ? 'Guardando…' : 'Guardar cambios'}
-        </button>
-      </div>
-
-      {/* WhatsApp credentials */}
-      <div className="panel panel--mb">
-        <h2 className="section-title" style={{ fontSize: 16, marginBottom: 16 }}>Credenciales WhatsApp</h2>
-        <p className="field-hint" style={{ marginBottom: 16 }}>
-          Necesitás una cuenta de Meta Business con WhatsApp Cloud API habilitado.
-          Si no configurás estas credenciales, los mensajes se registran en el log del servidor (modo prueba).
-        </p>
-        <div className="form-col">
-          <div>
-            <label className="label">API Key (Access Token)</label>
-            <input
-              className="input"
-              type="password"
-              placeholder="EAA..."
-              value={settings.waApiKey ?? ''}
-              onChange={e => set('waApiKey', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label">Phone Number ID</label>
-            <input
-              className="input"
-              type="text"
-              placeholder="1234567890"
-              value={settings.waPhoneNumberId ?? ''}
-              onChange={e => set('waPhoneNumberId', e.target.value)}
-            />
-          </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {testResult && <span style={{ fontSize: 13, color: 'var(--c-muted)' }}>{testResult}</span>}
+          <button className="btn btn-outline btn-sm" onClick={handleTest} disabled={testing}>
+            {testing ? 'Ejecutando…' : 'Probar ahora'}
+          </button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+            {saved ? '¡Guardado!' : saving ? 'Guardando…' : 'Guardar cambios'}
+          </button>
         </div>
       </div>
 
@@ -120,16 +136,11 @@ export default function RecordatoriosPage() {
         </div>
         {settings.cancelRescheduleEnabled && (
           <div style={{ marginTop: 16 }}>
-            <label className="label">Horas antes del turno</label>
-            <input
-              className="input"
-              type="number"
-              min={1}
-              max={48}
-              step={0.5}
+            <label className="label">Tiempo antes del turno</label>
+            <HoursMinutesPicker
               value={settings.cancelRescheduleHoursBefore}
-              onChange={e => set('cancelRescheduleHoursBefore', Number(e.target.value))}
-              style={{ width: 100 }}
+              onChange={v => set('cancelRescheduleHoursBefore', v)}
+              maxHours={48}
             />
           </div>
         )}
@@ -153,16 +164,11 @@ export default function RecordatoriosPage() {
         </div>
         {settings.reminderEnabled && (
           <div style={{ marginTop: 16 }}>
-            <label className="label">Horas antes del turno</label>
-            <input
-              className="input"
-              type="number"
-              min={0.5}
-              max={24}
-              step={0.5}
+            <label className="label">Tiempo antes del turno</label>
+            <HoursMinutesPicker
               value={settings.reminderHoursBefore}
-              onChange={e => set('reminderHoursBefore', Number(e.target.value))}
-              style={{ width: 100 }}
+              onChange={v => set('reminderHoursBefore', v)}
+              maxHours={24}
             />
           </div>
         )}
@@ -187,16 +193,11 @@ export default function RecordatoriosPage() {
         {settings.reviewEnabled && (
           <div className="form-col" style={{ marginTop: 16 }}>
             <div>
-              <label className="label">Horas después del turno</label>
-              <input
-                className="input"
-                type="number"
-                min={0.5}
-                max={48}
-                step={0.5}
+              <label className="label">Tiempo después del turno</label>
+              <HoursMinutesPicker
                 value={settings.reviewHoursAfter}
-                onChange={e => set('reviewHoursAfter', Number(e.target.value))}
-                style={{ width: 100 }}
+                onChange={v => set('reviewHoursAfter', v)}
+                maxHours={48}
               />
             </div>
             <div>
