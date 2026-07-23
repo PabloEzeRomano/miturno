@@ -411,6 +411,33 @@ button {
 }
 
 /* ---- Category picker ---- */
+.rubro-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rubro-btn {
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--c-line);
+  background: var(--c-surface);
+  font-size: 13px;
+  font-family: var(--f-body);
+  cursor: pointer;
+  color: var(--c-muted);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.rubro-btn:hover {
+  border-color: var(--c-gold);
+  color: var(--c-ink);
+}
+.rubro-btn--sel {
+  background: var(--c-gold);
+  border-color: var(--c-gold);
+  color: var(--c-ink);
+  font-weight: 500;
+}
+
 .color-picker {
   display: flex;
   gap: 14px;

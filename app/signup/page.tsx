@@ -5,10 +5,18 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { BrandMark, Wordmark } from '@/components/Brand'
 import { useCategory } from '@/lib/theme-context'
-import { getAllCategoryDefs } from '@/lib/categories'
+import { getAllCategoryDefs, getCategoryDef } from '@/lib/categories'
 import type { CategoryDef } from '@/lib/categories'
 
 const allCategories = getAllCategoryDefs()
+
+const RUBROS = [
+  { id: 'barberia',     label: 'Barbería / Peluquería' },
+  { id: 'clinica',      label: 'Clínica / Salud' },
+  { id: 'estetica',     label: 'Estética / Nails' },
+  { id: 'hairimplants', label: 'Implantes capilares' },
+  { id: 'otro',         label: 'Otro' },
+]
 
 interface Service {
   name: string
@@ -20,9 +28,10 @@ export default function SignupPage() {
   const router = useRouter()
   const { appName } = useCategory()
   const [step, setStep] = useState(1)
+  const [rubroId, setRubroId] = useState<string>('barberia')
   const [selectedCategory, setSelectedCategory] = useState<CategoryDef>(allCategories[0])
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', shopName: '' })
-  const [services, setServices] = useState<Service[]>(selectedCategory.defaultServices.map(s => ({ ...s })))
+  const [services, setServices] = useState<Service[]>(allCategories[0].defaultServices.map(s => ({ ...s })))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -30,9 +39,19 @@ export default function SignupPage() {
     return (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [field]: e.target.value }))
   }
 
+  function selectRubro(id: string) {
+    setRubroId(id)
+    if (id !== 'otro') {
+      const cat = getCategoryDef(id)
+      setSelectedCategory(cat)
+      setServices(cat.defaultServices.map(s => ({ ...s })))
+    } else {
+      setServices([])
+    }
+  }
+
   function selectCategory(cat: CategoryDef) {
     setSelectedCategory(cat)
-    setServices(cat.defaultServices.map(s => ({ ...s })))
   }
 
   const step1Valid =
@@ -112,6 +131,22 @@ export default function SignupPage() {
                 className="form-col"
               >
                 <div>
+                  <label className="label">Rubro</label>
+                  <div className="rubro-picker">
+                    {RUBROS.map(r => (
+                      <button
+                        type="button"
+                        key={r.id}
+                        onClick={() => selectRubro(r.id)}
+                        className={`rubro-btn${rubroId === r.id ? ' rubro-btn--sel' : ''}`}
+                        aria-pressed={rubroId === r.id}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
                   <label className="label">Color de tu marca</label>
                   <div className="color-picker">
                     {allCategories.map(cat => (
@@ -159,9 +194,13 @@ export default function SignupPage() {
           {step === 2 && (
             <div>
               <span className="eyebrow">PASO 2 DE 2</span>
-              <h2 className="auth-title" style={{ fontSize: 26, marginTop: 6 }}>Configurá tus servicios</h2>
+              <h2 className="auth-title" style={{ fontSize: 26, marginTop: 6 }}>
+                {rubroId === 'otro' ? 'Agregá tus servicios' : 'Configurá tus servicios'}
+              </h2>
               <p className="auth-sub" style={{ marginBottom: 24 }}>
-                Estos son los servicios con los que vas a arrancar. Podés editarlos en cualquier momento.
+                {rubroId === 'otro'
+                  ? 'Agregá los servicios que ofrecés. Podés editarlos en cualquier momento.'
+                  : 'Estos son los servicios con los que vas a arrancar. Podés editarlos en cualquier momento.'}
               </p>
 
               <form onSubmit={handleSubmit}>
@@ -203,7 +242,7 @@ export default function SignupPage() {
                           min={0}
                         />
                       </div>
-                      {services.length > 1 && (
+                      {(rubroId === 'otro' || services.length > 1) && (
                         <button type="button" className="svc-del" aria-label="Eliminar servicio" onClick={() => removeService(i)}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                             <line x1="6" y1="6" x2="18" y2="18" />
