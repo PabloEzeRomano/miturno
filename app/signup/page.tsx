@@ -42,9 +42,7 @@ export default function SignupPage() {
   function selectRubro(id: string) {
     setRubroId(id)
     if (id !== 'otro') {
-      const cat = getCategoryDef(id)
-      setSelectedCategory(cat)
-      setServices(cat.defaultServices.map(s => ({ ...s })))
+      setServices(getCategoryDef(id).defaultServices.map(s => ({ ...s })))
     } else {
       setServices([])
     }
