@@ -34,7 +34,7 @@ export function Nav({ isAuthenticated, activeTheme, onThemeChange, allThemes }: 
           key={t.id}
           type="button"
           className={`nav-swatch${activeTheme === t.id ? ' nav-swatch--active' : ''}`}
-          style={{ background: t.theme.accent }}
+          style={{ background: t.theme.accent, ['--swatch-color' as string]: t.theme.accent }}
           aria-label={t.name}
           aria-pressed={activeTheme === t.id}
           onClick={() => onThemeChange(t.id)}
@@ -58,8 +58,6 @@ export function Nav({ isAuthenticated, activeTheme, onThemeChange, allThemes }: 
             <a href="#pricing" className="nav-link">Precio</a>
             <a href="#faq" className="nav-link">Preguntas</a>
           </div>
-
-          {swatches}
 
           <div className="nav-actions">
             {isAuthenticated ? (
