@@ -45,7 +45,10 @@ export default function LoginPage() {
               <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="vos@ejemplo.com" autoFocus />
             </div>
             <div>
-              <label className="label">Contraseña</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <label className="label">Contraseña</label>
+                <Link href="/forgot-password" style={{ fontSize: 12, color: 'var(--c-muted)' }}>¿Olvidaste tu contraseña?</Link>
+              </div>
               <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" />
             </div>
 
